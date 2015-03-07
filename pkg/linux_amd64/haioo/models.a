@@ -1,0 +1,671 @@
+!<arch>
+__.PKGDEF       0           0     0     644     109934    `
+go object linux amd64 go1.4.1 X:precisestack
+
+$$
+package models
+	import goconfig "github.com/Unknwon/goconfig"
+	import runtime "runtime"
+	import fmt "fmt"
+	import mysql "github.com/go-sql-driver/mysql"
+	import xorm "github.com/go-xorm/xorm"
+	import core "github.com/go-xorm/core" // indirect
+	import sql "database/sql" // indirect
+	import driver "database/sql/driver" // indirect
+	type @"database/sql/driver".Tx interface { Commit() (? error); Rollback() (? error) }
+	type @"database/sql/driver".Result interface { LastInsertId() (? int64, ? error); RowsAffected() (? int64, ? error) }
+	type @"database/sql/driver".Value interface {}
+	type @"database/sql/driver".Rows interface { Close() (? error); Columns() (? []string); Next(@"database/sql/driver".dest []@"database/sql/driver".Value) (? error) }
+	type @"database/sql/driver".Stmt interface { Close() (? error); Exec(@"database/sql/driver".args []@"database/sql/driver".Value) (? @"database/sql/driver".Result, ? error); NumInput() (? int); Query(@"database/sql/driver".args []@"database/sql/driver".Value) (? @"database/sql/driver".Rows, ? error) }
+	type @"database/sql/driver".Conn interface { Begin() (? @"database/sql/driver".Tx, ? error); Close() (? error); Prepare(@"database/sql/driver".query string) (? @"database/sql/driver".Stmt, ? error) }
+	type @"database/sql/driver".Driver interface { Open(@"database/sql/driver".name string) (? @"database/sql/driver".Conn, ? error) }
+	import sync "sync" // indirect
+	type @"sync".Mutex struct { @"sync".state int32; @"sync".sema uint32 }
+	func (@"sync".mÂ·1 *@"sync".Mutex) Lock ()
+	func (@"sync".mÂ·1 *@"sync".Mutex) Unlock ()
+	type @"database/sql".driverConn struct { @"database/sql".db *@"database/sql".DB; ? @"sync".Mutex; @"database/sql".ci @"database/sql/driver".Conn; @"database/sql".closed bool; @"database/sql".finalClosed bool; @"database/sql".openStmt map[@"database/sql/driver".Stmt]bool; @"database/sql".inUse bool; @"database/sql".onPut []func(); @"database/sql".dbmuClosed bool }
+	func (@"database/sql".dcÂ·2 *@"database/sql".driverConn) Close () (? error)
+	func (@"database/sql".dcÂ·2 *@"database/sql".driverConn) @"database/sql".closeDBLocked () (? func() (? error))
+	func (@"database/sql".dcÂ·2 *@"database/sql".driverConn) @"database/sql".finalClose () (? error)
+	func (@"database/sql".dcÂ·3 *@"database/sql".driverConn) @"database/sql".prepareLocked (@"database/sql".queryÂ·4 string) (? @"database/sql/driver".Stmt, ? error)
+	func (@"database/sql".dcÂ·1 *@"database/sql".driverConn) @"database/sql".releaseConn (@"database/sql".errÂ·2 error "esc:0x0")
+	func (@"database/sql".dcÂ·1 *@"database/sql".driverConn) @"database/sql".removeOpenStmt (@"database/sql".siÂ·2 @"database/sql/driver".Stmt "esc:0x0")
+	type @"database/sql".connRequest struct { @"database/sql".conn *@"database/sql".driverConn; @"database/sql".err error }
+	type @"database/sql".depSet map[interface {}]bool
+	type @"database/sql".finalCloser interface { @"database/sql".finalClose() (? error) }
+	type @"sync".Locker interface { Lock(); Unlock() }
+	type @"sync".RWMutex struct { @"sync".w @"sync".Mutex; @"sync".writerSem uint32; @"sync".readerSem uint32; @"sync".readerCount int32; @"sync".readerWait int32 }
+	func (@"sync".rwÂ·1 *@"sync".RWMutex) Lock ()
+	func (@"sync".rwÂ·1 *@"sync".RWMutex) RLock ()
+	func (@"sync".rwÂ·2 *@"sync".RWMutex "esc:0x2") RLocker () (? @"sync".Locker) { return (*@"sync".rlocker)(@"sync".rwÂ·2) }
+	func (@"sync".rwÂ·1 *@"sync".RWMutex) RUnlock ()
+	func (@"sync".rwÂ·1 *@"sync".RWMutex) Unlock ()
+	type @"database/sql".driverStmt struct { ? @"sync".Locker; @"database/sql".si @"database/sql/driver".Stmt }
+	func (@"database/sql".dsÂ·2 *@"database/sql".driverStmt) Close () (? error)
+	type @"database/sql".connStmt struct { @"database/sql".dc *@"database/sql".driverConn; @"database/sql".si @"database/sql/driver".Stmt }
+	type @"database/sql".Result interface { LastInsertId() (? int64, ? error); RowsAffected() (? int64, ? error) }
+	type @"database/sql".Rows struct { @"database/sql".dc *@"database/sql".driverConn; @"database/sql".releaseConn func(? error); @"database/sql".rowsi @"database/sql/driver".Rows; @"database/sql".closed bool; @"database/sql".lastcols []@"database/sql/driver".Value; @"database/sql".lasterr error; @"database/sql".closeStmt @"database/sql/driver".Stmt }
+	func (@"database/sql".rsÂ·2 *@"database/sql".Rows) Close () (? error)
+	func (@"database/sql".rsÂ·3 *@"database/sql".Rows) Columns () (? []string, ? error)
+	func (@"database/sql".rsÂ·2 *@"database/sql".Rows "esc:0x1") Err () (? error) { if @"database/sql".rsÂ·2.@"database/sql".lasterr == @"io".EOF { return nil }; return @"database/sql".rsÂ·2.@"database/sql".lasterr }
+	func (@"database/sql".rsÂ·2 *@"database/sql".Rows) Next () (? bool)
+	func (@"database/sql".rsÂ·2 *@"database/sql".Rows "esc:0x0") Scan (@"database/sql".destÂ·3 ...interface {} "esc:0x0") (? error)
+	type @"database/sql".Row struct { @"database/sql".err error; @"database/sql".rows *@"database/sql".Rows }
+	func (@"database/sql".rÂ·2 *@"database/sql".Row) Scan (@"database/sql".destÂ·3 ...interface {} "esc:0x0") (? error)
+	type @"database/sql".Stmt struct { @"database/sql".db *@"database/sql".DB; @"database/sql".query string; @"database/sql".stickyErr error; @"database/sql".closemu @"sync".RWMutex; @"database/sql".tx *@"database/sql".Tx; @"database/sql".txsi *@"database/sql".driverStmt; @"database/sql".mu @"sync".Mutex; @"database/sql".closed bool; @"database/sql".css []@"database/sql".connStmt }
+	func (@"database/sql".sÂ·2 *@"database/sql".Stmt) Close () (? error)
+	func (@"database/sql".sÂ·3 *@"database/sql".Stmt) Exec (@"database/sql".argsÂ·4 ...interface {} "esc:0x0") (? @"database/sql".Result, ? error)
+	func (@"database/sql".sÂ·3 *@"database/sql".Stmt) Query (@"database/sql".argsÂ·4 ...interface {} "esc:0x0") (? *@"database/sql".Rows, ? error)
+	func (@"database/sql".sÂ·2 *@"database/sql".Stmt) QueryRow (@"database/sql".argsÂ·3 ...interface {} "esc:0x0") (? *@"database/sql".Row)
+	func (@"database/sql".sÂ·5 *@"database/sql".Stmt) @"database/sql".connStmt () (@"database/sql".ciÂ·1 *@"database/sql".driverConn, @"database/sql".releaseConnÂ·2 func(? error), @"database/sql".siÂ·3 @"database/sql/driver".Stmt, @"database/sql".errÂ·4 error)
+	func (@"database/sql".sÂ·2 *@"database/sql".Stmt) @"database/sql".finalClose () (? error)
+	type @"database/sql".Tx struct { @"database/sql".db *@"database/sql".DB; @"database/sql".dc *@"database/sql".driverConn; @"database/sql".txi @"database/sql/driver".Tx; @"database/sql".done bool; @"database/sql".stmts struct { ? @"sync".Mutex; @"database/sql".v []*@"database/sql".Stmt } }
+	func (@"database/sql".txÂ·2 *@"database/sql".Tx) Commit () (? error)
+	func (@"database/sql".txÂ·3 *@"database/sql".Tx) Exec (@"database/sql".queryÂ·4 string, @"database/sql".argsÂ·5 ...interface {} "esc:0x0") (? @"database/sql".Result, ? error)
+	func (@"database/sql".txÂ·3 *@"database/sql".Tx) Prepare (@"database/sql".queryÂ·4 string) (? *@"database/sql".Stmt, ? error)
+	func (@"database/sql".txÂ·3 *@"database/sql".Tx) Query (@"database/sql".queryÂ·4 string, @"database/sql".argsÂ·5 ...interface {} "esc:0x0") (? *@"database/sql".Rows, ? error)
+	func (@"database/sql".txÂ·2 *@"database/sql".Tx) QueryRow (@"database/sql".queryÂ·3 string, @"database/sql".argsÂ·4 ...interface {} "esc:0x0") (? *@"database/sql".Row)
+	func (@"database/sql".txÂ·2 *@"database/sql".Tx) Rollback () (? error)
+	func (@"database/sql".txÂ·2 *@"database/sql".Tx) Stmt (@"database/sql".stmtÂ·3 *@"database/sql".Stmt) (? *@"database/sql".Stmt)
+	func (@"database/sql".txÂ·1 *@"database/sql".Tx) @"database/sql".close ()
+	func (@"database/sql".txÂ·1 *@"database/sql".Tx) @"database/sql".closePrepared ()
+	func (@"database/sql".txÂ·3 *@"database/sql".Tx "esc:0x1") @"database/sql".grabConn () (? *@"database/sql".driverConn, ? error) { if @"database/sql".txÂ·3.@"database/sql".done { return nil, @"database/sql".ErrTxDone }; return @"database/sql".txÂ·3.@"database/sql".dc, nil }
+	type @"database/sql".DB struct { @"database/sql".driver @"database/sql/driver".Driver; @"database/sql".dsn string; @"database/sql".mu @"sync".Mutex; @"database/sql".freeConn []*@"database/sql".driverConn; @"database/sql".connRequests []chan @"database/sql".connRequest; @"database/sql".numOpen int; @"database/sql".pendingOpens int; @"database/sql".openerCh chan struct {}; @"database/sql".closed bool; @"database/sql".dep map[@"database/sql".finalCloser]@"database/sql".depSet; @"database/sql".lastPut map[*@"database/sql".driverConn]string; @"database/sql".maxIdle int; @"database/sql".maxOpen int }
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) Begin () (? *@"database/sql".Tx, ? error)
+	func (@"database/sql".dbÂ·2 *@"database/sql".DB) Close () (? error)
+	func (@"database/sql".dbÂ·2 *@"database/sql".DB "esc:0x1") Driver () (? @"database/sql/driver".Driver) { return @"database/sql".dbÂ·2.@"database/sql".driver }
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) Exec (@"database/sql".queryÂ·4 string, @"database/sql".argsÂ·5 ...interface {} "esc:0x0") (? @"database/sql".Result, ? error)
+	func (@"database/sql".dbÂ·2 *@"database/sql".DB) Ping () (? error)
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) Prepare (@"database/sql".queryÂ·4 string) (? *@"database/sql".Stmt, ? error)
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) Query (@"database/sql".queryÂ·4 string, @"database/sql".argsÂ·5 ...interface {} "esc:0x0") (? *@"database/sql".Rows, ? error)
+	func (@"database/sql".dbÂ·2 *@"database/sql".DB) QueryRow (@"database/sql".queryÂ·3 string, @"database/sql".argsÂ·4 ...interface {} "esc:0x0") (? *@"database/sql".Row)
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB) SetMaxIdleConns (@"database/sql".nÂ·2 int)
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB) SetMaxOpenConns (@"database/sql".nÂ·2 int)
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB) @"database/sql".addDep (@"database/sql".xÂ·2 @"database/sql".finalCloser, @"database/sql".depÂ·3 interface {})
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB "esc:0x0") @"database/sql".addDepLocked (@"database/sql".xÂ·2 @"database/sql".finalCloser, @"database/sql".depÂ·3 interface {})
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) @"database/sql".begin () (@"database/sql".txÂ·1 *@"database/sql".Tx, @"database/sql".errÂ·2 error)
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) @"database/sql".conn () (? *@"database/sql".driverConn, ? error)
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) @"database/sql".connIfFree (@"database/sql".wantedÂ·4 *@"database/sql".driverConn "esc:0x2") (? *@"database/sql".driverConn, ? error)
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB) @"database/sql".connectionOpener ()
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) @"database/sql".exec (@"database/sql".queryÂ·4 string, @"database/sql".argsÂ·5 []interface {} "esc:0x0") (@"database/sql".resÂ·1 @"database/sql".Result, @"database/sql".errÂ·2 error)
+	func (@"database/sql".dbÂ·2 *@"database/sql".DB "esc:0x0") @"database/sql".maxIdleConnsLocked () (? int)
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB "esc:0x0") @"database/sql".maybeOpenNewConnections ()
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB) @"database/sql".noteUnusedDriverStatement (@"database/sql".cÂ·2 *@"database/sql".driverConn, @"database/sql".siÂ·3 @"database/sql/driver".Stmt)
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB) @"database/sql".openNewConnection ()
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) @"database/sql".prepare (@"database/sql".queryÂ·4 string) (? *@"database/sql".Stmt, ? error)
+	func (@"database/sql".dbÂ·1 *@"database/sql".DB) @"database/sql".putConn (@"database/sql".dcÂ·2 *@"database/sql".driverConn, @"database/sql".errÂ·3 error "esc:0x0")
+	func (@"database/sql".dbÂ·2 *@"database/sql".DB) @"database/sql".putConnDBLocked (@"database/sql".dcÂ·3 *@"database/sql".driverConn, @"database/sql".errÂ·4 error) (? bool)
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB) @"database/sql".query (@"database/sql".queryÂ·4 string, @"database/sql".argsÂ·5 []interface {} "esc:0x0") (? *@"database/sql".Rows, ? error)
+	func (@"database/sql".dbÂ·3 *@"database/sql".DB "esc:0x0") @"database/sql".queryConn (@"database/sql".dcÂ·4 *@"database/sql".driverConn, @"database/sql".releaseConnÂ·5 func(? error), @"database/sql".queryÂ·6 string, @"database/sql".argsÂ·7 []interface {} "esc:0x0") (? *@"database/sql".Rows, ? error)
+	func (@"database/sql".dbÂ·2 *@"database/sql".DB) @"database/sql".removeDep (@"database/sql".xÂ·3 @"database/sql".finalCloser, @"database/sql".depÂ·4 interface {}) (? error)
+	func (@"database/sql".dbÂ·2 *@"database/sql".DB "esc:0x0") @"database/sql".removeDepLocked (@"database/sql".xÂ·3 @"database/sql".finalCloser, @"database/sql".depÂ·4 interface {}) (? func() (? error))
+	type @"github.com/go-xorm/core".IMapper interface { Obj2Table(? string) (? string); Table2Obj(? string) (? string) }
+	type @"github.com/go-xorm/core".Rows struct { ? *@"database/sql".Rows; Mapper @"github.com/go-xorm/core".IMapper }
+	func (@"github.com/go-xorm/core".rsÂ·2 *@"github.com/go-xorm/core".Rows) ScanMap (@"github.com/go-xorm/core".destÂ·3 interface {}) (? error)
+	func (@"github.com/go-xorm/core".rsÂ·2 *@"github.com/go-xorm/core".Rows) ScanSlice (@"github.com/go-xorm/core".destÂ·3 interface {}) (? error)
+	func (@"github.com/go-xorm/core".rsÂ·2 *@"github.com/go-xorm/core".Rows) ScanStructByIndex (@"github.com/go-xorm/core".destÂ·3 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/core".rsÂ·2 *@"github.com/go-xorm/core".Rows) ScanStructByName (@"github.com/go-xorm/core".destÂ·3 interface {}) (? error)
+	type @"github.com/go-xorm/core".Row struct { ? *@"database/sql".Row; @"github.com/go-xorm/core".err error; Mapper @"github.com/go-xorm/core".IMapper }
+	func (@"github.com/go-xorm/core".rowÂ·2 *@"github.com/go-xorm/core".Row) Scan (@"github.com/go-xorm/core".destÂ·3 ...interface {} "esc:0x0") (? error)
+	type @"github.com/go-xorm/core".Stmt struct { ? *@"database/sql".Stmt; Mapper @"github.com/go-xorm/core".IMapper; @"github.com/go-xorm/core".names map[string]int }
+	func (@"github.com/go-xorm/core".sÂ·3 *@"github.com/go-xorm/core".Stmt) ExecMap (@"github.com/go-xorm/core".mpÂ·4 interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/core".sÂ·3 *@"github.com/go-xorm/core".Stmt) ExecStruct (@"github.com/go-xorm/core".stÂ·4 interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/core".sÂ·3 *@"github.com/go-xorm/core".Stmt) Query (@"github.com/go-xorm/core".argsÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/core".Rows, ? error)
+	func (@"github.com/go-xorm/core".sÂ·3 *@"github.com/go-xorm/core".Stmt) QueryMap (@"github.com/go-xorm/core".mpÂ·4 interface {}) (? *@"github.com/go-xorm/core".Rows, ? error)
+	func (@"github.com/go-xorm/core".sÂ·2 *@"github.com/go-xorm/core".Stmt) QueryRow (@"github.com/go-xorm/core".argsÂ·3 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".sÂ·2 *@"github.com/go-xorm/core".Stmt) QueryRowMap (@"github.com/go-xorm/core".mpÂ·3 interface {}) (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".sÂ·2 *@"github.com/go-xorm/core".Stmt) QueryRowStruct (@"github.com/go-xorm/core".stÂ·3 interface {}) (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".sÂ·3 *@"github.com/go-xorm/core".Stmt) QueryStruct (@"github.com/go-xorm/core".stÂ·4 interface {}) (? *@"github.com/go-xorm/core".Rows, ? error)
+	type @"github.com/go-xorm/core".Tx struct { ? *@"database/sql".Tx; Mapper @"github.com/go-xorm/core".IMapper }
+	func (@"github.com/go-xorm/core".txÂ·3 *@"github.com/go-xorm/core".Tx) ExecMap (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".mpÂ·5 interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/core".txÂ·3 *@"github.com/go-xorm/core".Tx) ExecStruct (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".stÂ·5 interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/core".txÂ·3 *@"github.com/go-xorm/core".Tx) Prepare (@"github.com/go-xorm/core".queryÂ·4 string) (? *@"github.com/go-xorm/core".Stmt, ? error)
+	func (@"github.com/go-xorm/core".txÂ·3 *@"github.com/go-xorm/core".Tx) Query (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".argsÂ·5 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/core".Rows, ? error)
+	func (@"github.com/go-xorm/core".txÂ·3 *@"github.com/go-xorm/core".Tx) QueryMap (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".mpÂ·5 interface {}) (? *@"github.com/go-xorm/core".Rows, ? error)
+	func (@"github.com/go-xorm/core".txÂ·2 *@"github.com/go-xorm/core".Tx) QueryRow (@"github.com/go-xorm/core".queryÂ·3 string, @"github.com/go-xorm/core".argsÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".txÂ·2 *@"github.com/go-xorm/core".Tx) QueryRowMap (@"github.com/go-xorm/core".queryÂ·3 string, @"github.com/go-xorm/core".mpÂ·4 interface {}) (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".txÂ·2 *@"github.com/go-xorm/core".Tx) QueryRowStruct (@"github.com/go-xorm/core".queryÂ·3 string, @"github.com/go-xorm/core".stÂ·4 interface {}) (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".txÂ·3 *@"github.com/go-xorm/core".Tx) QueryStruct (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".stÂ·5 interface {}) (? *@"github.com/go-xorm/core".Rows, ? error)
+	func (@"github.com/go-xorm/core".txÂ·2 *@"github.com/go-xorm/core".Tx "esc:0x0") Stmt (@"github.com/go-xorm/core".stmtÂ·3 *@"github.com/go-xorm/core".Stmt "esc:0x2") (? *@"github.com/go-xorm/core".Stmt) { return @"github.com/go-xorm/core".stmtÂ·3 }
+	type @"github.com/go-xorm/core".DB struct { ? *@"database/sql".DB; Mapper @"github.com/go-xorm/core".IMapper }
+	func (@"github.com/go-xorm/core".dbÂ·3 *@"github.com/go-xorm/core".DB) Begin () (? *@"github.com/go-xorm/core".Tx, ? error)
+	func (@"github.com/go-xorm/core".dbÂ·3 *@"github.com/go-xorm/core".DB) ExecMap (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".mpÂ·5 interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/core".dbÂ·3 *@"github.com/go-xorm/core".DB) ExecStruct (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".stÂ·5 interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/core".dbÂ·3 *@"github.com/go-xorm/core".DB) Prepare (@"github.com/go-xorm/core".queryÂ·4 string) (? *@"github.com/go-xorm/core".Stmt, ? error)
+	func (@"github.com/go-xorm/core".dbÂ·3 *@"github.com/go-xorm/core".DB) Query (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".argsÂ·5 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/core".Rows, ? error)
+	func (@"github.com/go-xorm/core".dbÂ·3 *@"github.com/go-xorm/core".DB) QueryMap (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".mpÂ·5 interface {}) (? *@"github.com/go-xorm/core".Rows, ? error)
+	func (@"github.com/go-xorm/core".dbÂ·2 *@"github.com/go-xorm/core".DB) QueryRow (@"github.com/go-xorm/core".queryÂ·3 string, @"github.com/go-xorm/core".argsÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".dbÂ·2 *@"github.com/go-xorm/core".DB) QueryRowMap (@"github.com/go-xorm/core".queryÂ·3 string, @"github.com/go-xorm/core".mpÂ·4 interface {}) (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".dbÂ·2 *@"github.com/go-xorm/core".DB) QueryRowStruct (@"github.com/go-xorm/core".queryÂ·3 string, @"github.com/go-xorm/core".stÂ·4 interface {}) (? *@"github.com/go-xorm/core".Row)
+	func (@"github.com/go-xorm/core".dbÂ·3 *@"github.com/go-xorm/core".DB) QueryStruct (@"github.com/go-xorm/core".queryÂ·4 string, @"github.com/go-xorm/core".stÂ·5 interface {}) (? *@"github.com/go-xorm/core".Rows, ? error)
+	type @"github.com/go-xorm/core".Index struct { IsRegular bool; Name string; Type int; Cols []string }
+	func (@"github.com/go-xorm/core".indexÂ·1 *@"github.com/go-xorm/core".Index) AddColumn (@"github.com/go-xorm/core".colsÂ·2 ...string "esc:0x0")
+	func (@"github.com/go-xorm/core".indexÂ·2 *@"github.com/go-xorm/core".Index) Equal (@"github.com/go-xorm/core".dstÂ·3 *@"github.com/go-xorm/core".Index) (? bool)
+	func (@"github.com/go-xorm/core".indexÂ·2 *@"github.com/go-xorm/core".Index) XName (@"github.com/go-xorm/core".tableNameÂ·3 string) (? string)
+	import reflect "reflect" // indirect
+	type @"reflect".ChanDir int
+	func (@"reflect".dÂ·2 @"reflect".ChanDir) String () (? string)
+	type @"reflect".StructTag string
+	func (@"reflect".tagÂ·2 @"reflect".StructTag "esc:0x0") Get (@"reflect".keyÂ·3 string "esc:0x0") (? string)
+	type @"reflect".StructField struct { Name string; PkgPath string; Type @"reflect".Type; Tag @"reflect".StructTag; Offset uintptr; Index []int; Anonymous bool }
+	type @"reflect".Kind uint
+	func (@"reflect".kÂ·2 @"reflect".Kind) String () (? string)
+	type @"reflect".typeAlg struct { @"reflect".hash func(? @"unsafe".Pointer, ? uintptr, ? uintptr) (? uintptr); @"reflect".equal func(? @"unsafe".Pointer, ? @"unsafe".Pointer, ? uintptr) (? bool) }
+	type @"reflect".method struct { @"reflect".name *string; @"reflect".pkgPath *string; @"reflect".mtyp *@"reflect".rtype; @"reflect".typ *@"reflect".rtype; @"reflect".ifn @"unsafe".Pointer; @"reflect".tfn @"unsafe".Pointer }
+	type @"reflect".uncommonType struct { @"reflect".name *string; @"reflect".pkgPath *string; @"reflect".methods []@"reflect".method }
+	func (@"reflect".tÂ·2 *@"reflect".uncommonType "esc:0x1") Method (@"reflect".iÂ·3 int) (@"reflect".mÂ·1 @"reflect".Method)
+	func (@"reflect".tÂ·3 *@"reflect".uncommonType "esc:0x0") MethodByName (@"reflect".nameÂ·4 string "esc:0x0") (@"reflect".mÂ·1 @"reflect".Method, @"reflect".okÂ·2 bool)
+	func (@"reflect".tÂ·2 *@"reflect".uncommonType "esc:0x1") Name () (? string) { if @"reflect".tÂ·2 == nil || @"reflect".tÂ·2.@"reflect".name == nil { return "" }; return *@"reflect".tÂ·2.@"reflect".name }
+	func (@"reflect".tÂ·2 *@"reflect".uncommonType "esc:0x0") NumMethod () (? int) { if @"reflect".tÂ·2 == nil { return 0x0 }; return len(@"reflect".tÂ·2.@"reflect".methods) }
+	func (@"reflect".tÂ·2 *@"reflect".uncommonType "esc:0x1") PkgPath () (? string) { if @"reflect".tÂ·2 == nil || @"reflect".tÂ·2.@"reflect".pkgPath == nil { return "" }; return *@"reflect".tÂ·2.@"reflect".pkgPath }
+	func (@"reflect".tÂ·2 *@"reflect".uncommonType "esc:0x2") @"reflect".uncommon () (? *@"reflect".uncommonType) { return @"reflect".tÂ·2 }
+	type @"reflect".rtype struct { @"reflect".size uintptr; @"reflect".hash uint32; _ uint8; @"reflect".align uint8; @"reflect".fieldAlign uint8; @"reflect".kind uint8; @"reflect".alg *@"reflect".typeAlg; @"reflect".gc [2]@"unsafe".Pointer; @"reflect".string *string; @"reflect".? *@"reflect".uncommonType; @"reflect".ptrToThis *@"reflect".rtype; @"reflect".zero @"unsafe".Pointer }
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Align () (? int) { return int(@"reflect".tÂ·2.@"reflect".align) }
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") AssignableTo (@"reflect".uÂ·3 @"reflect".Type "esc:0x0") (? bool)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Bits () (? int)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") ChanDir () (? @"reflect".ChanDir)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Comparable () (? bool) { return @"reflect".tÂ·2.@"reflect".alg != nil && @"reflect".tÂ·2.@"reflect".alg.@"reflect".equal != nil }
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") ConvertibleTo (@"reflect".uÂ·3 @"reflect".Type "esc:0x0") (? bool)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x1") Elem () (? @"reflect".Type)
+	func (@"reflect".tÂ·2 *@"reflect".rtype) Field (@"reflect".iÂ·3 int) (? @"reflect".StructField)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") FieldAlign () (? int) { return int(@"reflect".tÂ·2.@"reflect".fieldAlign) }
+	func (@"reflect".tÂ·2 *@"reflect".rtype) FieldByIndex (@"reflect".indexÂ·3 []int "esc:0x0") (? @"reflect".StructField)
+	func (@"reflect".tÂ·3 *@"reflect".rtype) FieldByName (@"reflect".nameÂ·4 string "esc:0x0") (? @"reflect".StructField, ? bool)
+	func (@"reflect".tÂ·3 *@"reflect".rtype) FieldByNameFunc (@"reflect".matchÂ·4 func(? string) (? bool) "esc:0x0") (? @"reflect".StructField, ? bool)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Implements (@"reflect".uÂ·3 @"reflect".Type) (? bool)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") In (@"reflect".iÂ·3 int) (? @"reflect".Type)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") IsVariadic () (? bool)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x1") Key () (? @"reflect".Type)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Kind () (? @"reflect".Kind) { return @"reflect".Kind(@"reflect".tÂ·2.@"reflect".kind & 0x1F) }
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Len () (? int)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Method (@"reflect".iÂ·3 int) (@"reflect".mÂ·1 @"reflect".Method)
+	func (@"reflect".tÂ·3 *@"reflect".rtype "esc:0x0") MethodByName (@"reflect".nameÂ·4 string "esc:0x0") (@"reflect".mÂ·1 @"reflect".Method, @"reflect".okÂ·2 bool)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x1") Name () (? string)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") NumField () (? int)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") NumIn () (? int)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") NumMethod () (? int)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") NumOut () (? int)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Out (@"reflect".iÂ·3 int) (? @"reflect".Type)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x1") PkgPath () (? string)
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") Size () (? uintptr) { return @"reflect".tÂ·2.@"reflect".size }
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x1") String () (? string) { return *@"reflect".tÂ·2.@"reflect".string }
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x2") @"reflect".common () (? *@"reflect".rtype) { return @"reflect".tÂ·2 }
+	func (@"reflect".tÂ·2 *@"reflect".rtype "esc:0x0") @"reflect".pointers () (? bool) { return @"reflect".tÂ·2.@"reflect".kind & 0x80 == 0x0 }
+	func (@"reflect".tÂ·2 *@"reflect".rtype) @"reflect".ptrTo () (? *@"reflect".rtype)
+	type @"reflect".flag uintptr
+	func (@"reflect".fÂ·2 @"reflect".flag) @"reflect".kind () (? @"reflect".Kind) { return @"reflect".Kind(@"reflect".fÂ·2 & @"reflect".flag(0x1F)) }
+	func (@"reflect".fÂ·1 @"reflect".flag) @"reflect".mustBe (@"reflect".expectedÂ·2 @"reflect".Kind)
+	func (@"reflect".fÂ·1 @"reflect".flag) @"reflect".mustBeAssignable ()
+	func (@"reflect".fÂ·1 @"reflect".flag) @"reflect".mustBeExported ()
+	type @"reflect".Value struct { @"reflect".typ *@"reflect".rtype; @"reflect".ptr @"unsafe".Pointer; @"reflect".? @"reflect".flag }
+	func (@"reflect".vÂ·2 @"reflect".Value) Addr () (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") Bool () (? bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x1") Bytes () (? []byte)
+	func (@"reflect".vÂ·2 @"reflect".Value) Call (@"reflect".inÂ·3 []@"reflect".Value "esc:0x0") (? []@"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value) CallSlice (@"reflect".inÂ·3 []@"reflect".Value "esc:0x0") (? []@"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") CanAddr () (? bool) { return @"reflect".vÂ·2.@"reflect".flag & @"reflect".flag(0x80) != @"reflect".flag(0x0) }
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") CanInterface () (? bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") CanSet () (? bool) { return @"reflect".vÂ·2.@"reflect".flag & @"reflect".flag(0xA0) == @"reflect".flag(0x80) }
+	func (@"reflect".vÂ·2 @"reflect".Value) Cap () (? int)
+	func (@"reflect".vÂ·1 @"reflect".Value) Close ()
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") Complex () (? complex128)
+	func (@"reflect".vÂ·2 @"reflect".Value) Convert (@"reflect".tÂ·3 @"reflect".Type) (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x3") Elem () (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x3") Field (@"reflect".iÂ·3 int) (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x2") FieldByIndex (@"reflect".indexÂ·3 []int "esc:0x0") (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value) FieldByName (@"reflect".nameÂ·3 string "esc:0x0") (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value) FieldByNameFunc (@"reflect".matchÂ·3 func(? string) (? bool) "esc:0x0") (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") Float () (? float64)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x3") Index (@"reflect".iÂ·3 int) (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") Int () (? int64)
+	func (@"reflect".vÂ·2 @"reflect".Value) Interface () (@"reflect".iÂ·1 interface {})
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") InterfaceData () (? [2]uintptr)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") IsNil () (? bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") IsValid () (? bool) { return @"reflect".vÂ·2.@"reflect".flag != @"reflect".flag(0x0) }
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") Kind () (? @"reflect".Kind)
+	func (@"reflect".vÂ·2 @"reflect".Value) Len () (? int)
+	func (@"reflect".vÂ·2 @"reflect".Value) MapIndex (@"reflect".keyÂ·3 @"reflect".Value) (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value) MapKeys () (? []@"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x2") Method (@"reflect".iÂ·3 int) (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x2") MethodByName (@"reflect".nameÂ·3 string "esc:0x0") (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") NumField () (? int)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") NumMethod () (? int)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") OverflowComplex (@"reflect".xÂ·3 complex128) (? bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") OverflowFloat (@"reflect".xÂ·3 float64) (? bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") OverflowInt (@"reflect".xÂ·3 int64) (? bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") OverflowUint (@"reflect".xÂ·3 uint64) (? bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x2") Pointer () (? uintptr)
+	func (@"reflect".vÂ·3 @"reflect".Value) Recv () (@"reflect".xÂ·1 @"reflect".Value, @"reflect".okÂ·2 bool)
+	func (@"reflect".vÂ·1 @"reflect".Value) Send (@"reflect".xÂ·2 @"reflect".Value)
+	func (@"reflect".vÂ·1 @"reflect".Value) Set (@"reflect".xÂ·2 @"reflect".Value)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetBool (@"reflect".xÂ·2 bool)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetBytes (@"reflect".xÂ·2 []byte)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetCap (@"reflect".nÂ·2 int)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetComplex (@"reflect".xÂ·2 complex128)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetFloat (@"reflect".xÂ·2 float64)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetInt (@"reflect".xÂ·2 int64)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetLen (@"reflect".nÂ·2 int)
+	func (@"reflect".vÂ·1 @"reflect".Value) SetMapIndex (@"reflect".keyÂ·2 @"reflect".Value, @"reflect".valÂ·3 @"reflect".Value)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetPointer (@"reflect".xÂ·2 @"unsafe".Pointer)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetString (@"reflect".xÂ·2 string)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") SetUint (@"reflect".xÂ·2 uint64)
+	func (@"reflect".vÂ·2 @"reflect".Value) Slice (@"reflect".iÂ·3 int, @"reflect".jÂ·4 int) (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value) Slice3 (@"reflect".iÂ·3 int, @"reflect".jÂ·4 int, @"reflect".kÂ·5 int) (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value) String () (? string)
+	func (@"reflect".vÂ·3 @"reflect".Value) TryRecv () (@"reflect".xÂ·1 @"reflect".Value, @"reflect".okÂ·2 bool)
+	func (@"reflect".vÂ·2 @"reflect".Value) TrySend (@"reflect".xÂ·3 @"reflect".Value) (? bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x3") Type () (? @"reflect".Type)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x0") Uint () (? uint64)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x2") UnsafeAddr () (? uintptr)
+	func (@"reflect".vÂ·2 @"reflect".Value) @"reflect".assignTo (@"reflect".contextÂ·3 string "esc:0x0", @"reflect".dstÂ·4 *@"reflect".rtype, @"reflect".targetÂ·5 @"unsafe".Pointer) (? @"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value) @"reflect".call (@"reflect".opÂ·3 string "esc:0x0", @"reflect".inÂ·4 []@"reflect".Value "esc:0x0") (? []@"reflect".Value)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x3") @"reflect".pointer () (? @"unsafe".Pointer)
+	func (@"reflect".vÂ·3 @"reflect".Value) @"reflect".recv (@"reflect".nbÂ·4 bool) (@"reflect".valÂ·1 @"reflect".Value, @"reflect".okÂ·2 bool)
+	func (@"reflect".vÂ·2 @"reflect".Value "esc:0x1") @"reflect".runes () (? []rune)
+	func (@"reflect".vÂ·2 @"reflect".Value) @"reflect".send (@"reflect".xÂ·3 @"reflect".Value, @"reflect".nbÂ·4 bool) (@"reflect".selectedÂ·1 bool)
+	func (@"reflect".vÂ·1 @"reflect".Value "esc:0x0") @"reflect".setRunes (@"reflect".xÂ·2 []rune)
+	type @"reflect".Method struct { Name string; PkgPath string; Type @"reflect".Type; Func @"reflect".Value; Index int }
+	type @"reflect".Type interface { Align() (? int); AssignableTo(@"reflect".u @"reflect".Type) (? bool); Bits() (? int); ChanDir() (? @"reflect".ChanDir); Comparable() (? bool); ConvertibleTo(@"reflect".u @"reflect".Type) (? bool); Elem() (? @"reflect".Type); Field(@"reflect".i int) (? @"reflect".StructField); FieldAlign() (? int); FieldByIndex(@"reflect".index []int) (? @"reflect".StructField); FieldByName(@"reflect".name string) (? @"reflect".StructField, ? bool); FieldByNameFunc(@"reflect".match func(? string) (? bool)) (? @"reflect".StructField, ? bool); Implements(@"reflect".u @"reflect".Type) (? bool); In(@"reflect".i int) (? @"reflect".Type); IsVariadic() (? bool); Key() (? @"reflect".Type); Kind() (? @"reflect".Kind); Len() (? int); Method(? int) (? @"reflect".Method); MethodByName(? string) (? @"reflect".Method, ? bool); Name() (? string); NumField() (? int); NumIn() (? int); NumMethod() (? int); NumOut() (? int); Out(@"reflect".i int) (? @"reflect".Type); PkgPath() (? string); Size() (? uintptr); String() (? string); @"reflect".common() (? *@"reflect".rtype); @"reflect".uncommon() (? *@"reflect".uncommonType) }
+	type @"github.com/go-xorm/core".SQLType struct { Name string; DefaultLength int; DefaultLength2 int }
+	func (@"github.com/go-xorm/core".sÂ·2 *@"github.com/go-xorm/core".SQLType "esc:0x0") IsBlob () (? bool)
+	func (@"github.com/go-xorm/core".sÂ·2 *@"github.com/go-xorm/core".SQLType "esc:0x0") IsNumeric () (? bool)
+	func (@"github.com/go-xorm/core".sÂ·2 *@"github.com/go-xorm/core".SQLType "esc:0x0") IsText () (? bool)
+	func (@"github.com/go-xorm/core".sÂ·2 *@"github.com/go-xorm/core".SQLType "esc:0x0") IsTime () (? bool)
+	func (@"github.com/go-xorm/core".sÂ·2 *@"github.com/go-xorm/core".SQLType "esc:0x0") IsType (@"github.com/go-xorm/core".stÂ·3 int) (? bool) { var @"github.com/go-xorm/core".tÂ·4 int; ; var @"github.com/go-xorm/core".okÂ·5 bool; ; @"github.com/go-xorm/core".tÂ·4, @"github.com/go-xorm/core".okÂ·5 = @"github.com/go-xorm/core".SqlTypes[@"github.com/go-xorm/core".sÂ·2.Name]; if @"github.com/go-xorm/core".okÂ·5 && @"github.com/go-xorm/core".tÂ·4 == @"github.com/go-xorm/core".stÂ·3 { return true }; return false }
+	type @"github.com/go-xorm/core".Column struct { Name string; FieldName string; SQLType @"github.com/go-xorm/core".SQLType; Length int; Length2 int; Nullable bool; Default string; Indexes map[string]bool; IsPrimaryKey bool; IsAutoIncrement bool; MapType int; IsCreated bool; IsUpdated bool; IsDeleted bool; IsCascade bool; IsVersion bool; @"github.com/go-xorm/core".fieldPath []string; DefaultIsEmpty bool; EnumOptions map[string]int; SetOptions map[string]int }
+	func (@"github.com/go-xorm/core".colÂ·2 *@"github.com/go-xorm/core".Column) String (@"github.com/go-xorm/core".dÂ·3 @"github.com/go-xorm/core".Dialect) (? string)
+	func (@"github.com/go-xorm/core".colÂ·2 *@"github.com/go-xorm/core".Column) StringNoPk (@"github.com/go-xorm/core".dÂ·3 @"github.com/go-xorm/core".Dialect) (? string)
+	func (@"github.com/go-xorm/core".colÂ·3 *@"github.com/go-xorm/core".Column) ValueOf (@"github.com/go-xorm/core".beanÂ·4 interface {}) (? *@"reflect".Value, ? error)
+	func (@"github.com/go-xorm/core".colÂ·3 *@"github.com/go-xorm/core".Column) ValueOfV (@"github.com/go-xorm/core".dataStructÂ·4 *@"reflect".Value) (? *@"reflect".Value, ? error)
+	type @"github.com/go-xorm/core".Cacher interface { ClearBeans(@"github.com/go-xorm/core".tableName string); ClearIds(@"github.com/go-xorm/core".tableName string); DelBean(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".id string); DelIds(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".sql string); GetBean(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".id string) (? interface {}); GetIds(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".sql string) (? interface {}); PutBean(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".id string, @"github.com/go-xorm/core".obj interface {}); PutIds(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".sql string, @"github.com/go-xorm/core".ids interface {}) }
+	type @"github.com/go-xorm/core".Table struct { Name string; Type @"reflect".Type; @"github.com/go-xorm/core".columnsSeq []string; @"github.com/go-xorm/core".columnsMap map[string][]*@"github.com/go-xorm/core".Column; @"github.com/go-xorm/core".columns []*@"github.com/go-xorm/core".Column; Indexes map[string]*@"github.com/go-xorm/core".Index; PrimaryKeys []string; AutoIncrement string; Created map[string]bool; Updated string; Deleted string; Version string; Cacher @"github.com/go-xorm/core".Cacher; StoreEngine string; Charset string }
+	func (@"github.com/go-xorm/core".tableÂ·1 *@"github.com/go-xorm/core".Table) AddColumn (@"github.com/go-xorm/core".colÂ·2 *@"github.com/go-xorm/core".Column)
+	func (@"github.com/go-xorm/core".tableÂ·1 *@"github.com/go-xorm/core".Table "esc:0x0") AddIndex (@"github.com/go-xorm/core".indexÂ·2 *@"github.com/go-xorm/core".Index) { @"github.com/go-xorm/core".tableÂ·1.Indexes[@"github.com/go-xorm/core".indexÂ·2.Name] = @"github.com/go-xorm/core".indexÂ·2 }
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x0") AutoIncrColumn () (? *@"github.com/go-xorm/core".Column)
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table) ColumnType (@"github.com/go-xorm/core".nameÂ·3 string) (? @"reflect".Type)
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x1") Columns () (? []*@"github.com/go-xorm/core".Column) { return @"github.com/go-xorm/core".tableÂ·2.@"github.com/go-xorm/core".columns }
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x1") ColumnsSeq () (? []string) { return @"github.com/go-xorm/core".tableÂ·2.@"github.com/go-xorm/core".columnsSeq }
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x0") DeletedColumn () (? *@"github.com/go-xorm/core".Column)
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x0") GetColumn (@"github.com/go-xorm/core".nameÂ·3 string "esc:0x0") (? *@"github.com/go-xorm/core".Column)
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x0") GetColumnIdx (@"github.com/go-xorm/core".nameÂ·3 string "esc:0x0", @"github.com/go-xorm/core".idxÂ·4 int) (? *@"github.com/go-xorm/core".Column)
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x0") PKColumns () (? []*@"github.com/go-xorm/core".Column)
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x0") UpdatedColumn () (? *@"github.com/go-xorm/core".Column)
+	func (@"github.com/go-xorm/core".tableÂ·2 *@"github.com/go-xorm/core".Table "esc:0x0") VersionColumn () (? *@"github.com/go-xorm/core".Column)
+	type @"github.com/go-xorm/core".DbType string
+	type @"github.com/go-xorm/core".Filter interface { Do(@"github.com/go-xorm/core".sql string, @"github.com/go-xorm/core".dialect @"github.com/go-xorm/core".Dialect, @"github.com/go-xorm/core".table *@"github.com/go-xorm/core".Table) (? string) }
+	import time "time" // indirect
+	type @"time".Duration int64
+	func (@"time".dÂ·2 @"time".Duration) Hours () (? float64) { var @"time".hourÂ·3 @"time".Duration; ; @"time".hourÂ·3 = @"time".dÂ·2 / @"time".Duration(0x34630B8A000); var @"time".nsecÂ·4 @"time".Duration; ; @"time".nsecÂ·4 = @"time".dÂ·2 % @"time".Duration(0x34630B8A000); return float64(@"time".hourÂ·3) + float64(@"time".nsecÂ·4) * 0x9C5FFF26ED75Fp-93 }
+	func (@"time".dÂ·2 @"time".Duration) Minutes () (? float64) { var @"time".minÂ·3 @"time".Duration; ; @"time".minÂ·3 = @"time".dÂ·2 / @"time".Duration(0xDF8475800); var @"time".nsecÂ·4 @"time".Duration; ; @"time".nsecÂ·4 = @"time".dÂ·2 % @"time".Duration(0xDF8475800); return float64(@"time".minÂ·3) + float64(@"time".nsecÂ·4) * 0x9299FF347E9E9p-87 }
+	func (@"time".dÂ·2 @"time".Duration) Nanoseconds () (? int64) { return int64(@"time".dÂ·2) }
+	func (@"time".dÂ·2 @"time".Duration) Seconds () (? float64) { var @"time".secÂ·3 @"time".Duration; ; @"time".secÂ·3 = @"time".dÂ·2 / @"time".Duration(0x3B9ACA00); var @"time".nsecÂ·4 @"time".Duration; ; @"time".nsecÂ·4 = @"time".dÂ·2 % @"time".Duration(0x3B9ACA00); return float64(@"time".secÂ·3) + float64(@"time".nsecÂ·4) * 0x112E0BE826D695p-82 }
+	func (@"time".dÂ·2 @"time".Duration) String () (? string)
+	type @"github.com/go-xorm/core".Uri struct { DbType @"github.com/go-xorm/core".DbType; Proto string; Host string; Port string; DbName string; User string; Passwd string; Charset string; Laddr string; Raddr string; Timeout @"time".Duration }
+	type @"github.com/go-xorm/core".LogLevel int
+	type @"github.com/go-xorm/core".ILogger interface { Debug(@"github.com/go-xorm/core".v ...interface {}) (@"github.com/go-xorm/core".err error); Debugf(@"github.com/go-xorm/core".format string, @"github.com/go-xorm/core".v ...interface {}) (@"github.com/go-xorm/core".err error); Err(@"github.com/go-xorm/core".v ...interface {}) (@"github.com/go-xorm/core".err error); Errf(@"github.com/go-xorm/core".format string, @"github.com/go-xorm/core".v ...interface {}) (@"github.com/go-xorm/core".err error); Info(@"github.com/go-xorm/core".v ...interface {}) (@"github.com/go-xorm/core".err error); Infof(@"github.com/go-xorm/core".format string, @"github.com/go-xorm/core".v ...interface {}) (@"github.com/go-xorm/core".err error); Level() (? @"github.com/go-xorm/core".LogLevel); SetLevel(@"github.com/go-xorm/core".l @"github.com/go-xorm/core".LogLevel) (@"github.com/go-xorm/core".err error); Warning(@"github.com/go-xorm/core".v ...interface {}) (@"github.com/go-xorm/core".err error); Warningf(@"github.com/go-xorm/core".format string, @"github.com/go-xorm/core".v ...interface {}) (@"github.com/go-xorm/core".err error) }
+	type @"github.com/go-xorm/core".Dialect interface { AndStr() (? string); AutoIncrStr() (? string); CreateIndexSql(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".index *@"github.com/go-xorm/core".Index) (? string); CreateTableSql(@"github.com/go-xorm/core".table *@"github.com/go-xorm/core".Table, @"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".storeEngine string, @"github.com/go-xorm/core".charset string) (? string); DB() (? *@"github.com/go-xorm/core".DB); DBType() (? @"github.com/go-xorm/core".DbType); DataSourceName() (? string); DriverName() (? string); DropIndexSql(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".index *@"github.com/go-xorm/core".Index) (? string); DropTableSql(@"github.com/go-xorm/core".tableName string) (? string); EqStr() (? string); Filters() (? []@"github.com/go-xorm/core".Filter); FormatBytes(@"github.com/go-xorm/core".b []byte) (? string); GetColumns(@"github.com/go-xorm/core".tableName string) (? []string, ? map[string]*@"github.com/go-xorm/core".Column, ? error); GetIndexes(@"github.com/go-xorm/core".tableName string) (? map[string]*@"github.com/go-xorm/core".Index, ? error); GetTables() (? []*@"github.com/go-xorm/core".Table, ? error); IndexCheckSql(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".idxName string) (? string, ? []interface {}); IndexOnTable() (? bool); Init(? *@"github.com/go-xorm/core".DB, ? *@"github.com/go-xorm/core".Uri, ? string, ? string) (? error); IsColumnExist(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".col *@"github.com/go-xorm/core".Column) (? bool, ? error); IsReserved(? string) (? bool); ModifyColumnSql(@"github.com/go-xorm/core".tableName string, @"github.com/go-xorm/core".col *@"github.com/go-xorm/core".Column) (? string); OrStr() (? string); Quote(? string) (? string); QuoteStr() (? string); RollBackStr() (? string); SetLogger(@"github.com/go-xorm/core".logger @"github.com/go-xorm/core".ILogger); ShowCreateNull() (? bool); SqlType(? *@"github.com/go-xorm/core".Column) (? string); SupportCharset() (? bool); SupportEngine() (? bool); SupportInsertMany() (? bool); TableCheckSql(@"github.com/go-xorm/core".tableName string) (? string, ? []interface {}); URI() (? *@"github.com/go-xorm/core".Uri) }
+	type @"time".zone struct { @"time".name string; @"time".offset int; @"time".isDST bool }
+	type @"time".zoneTrans struct { @"time".when int64; @"time".index uint8; @"time".isstd bool; @"time".isutc bool }
+	type @"time".Location struct { @"time".name string; @"time".zone []@"time".zone; @"time".tx []@"time".zoneTrans; @"time".cacheStart int64; @"time".cacheEnd int64; @"time".cacheZone *@"time".zone }
+	func (@"time".lÂ·2 *@"time".Location "esc:0x0") String () (? string)
+	func (@"time".lÂ·2 *@"time".Location "esc:0x0") @"time".firstZoneUsed () (? bool)
+	func (@"time".lÂ·2 *@"time".Location "esc:0x2") @"time".get () (? *@"time".Location)
+	func (@"time".lÂ·6 *@"time".Location "esc:0x1") @"time".lookup (@"time".secÂ·7 int64) (@"time".nameÂ·1 string, @"time".offsetÂ·2 int, @"time".isDSTÂ·3 bool, @"time".startÂ·4 int64, @"time".endÂ·5 int64)
+	func (@"time".lÂ·2 *@"time".Location "esc:0x0") @"time".lookupFirstZone () (? int)
+	func (@"time".lÂ·4 *@"time".Location "esc:0x0") @"time".lookupName (@"time".nameÂ·5 string "esc:0x0", @"time".unixÂ·6 int64) (@"time".offsetÂ·1 int, @"time".isDSTÂ·2 bool, @"time".okÂ·3 bool)
+	type @"github.com/go-xorm/core".PK []interface {}
+	func (@"github.com/go-xorm/core".pÂ·2 *@"github.com/go-xorm/core".PK) FromString (@"github.com/go-xorm/core".contentÂ·3 string "esc:0x0") (? error)
+	func (@"github.com/go-xorm/core".pÂ·3 *@"github.com/go-xorm/core".PK) ToString () (? string, ? error)
+	type @"github.com/go-xorm/xorm".inParam struct { @"github.com/go-xorm/xorm".colName string; @"github.com/go-xorm/xorm".args []interface {} }
+	type @"github.com/go-xorm/xorm".incrParam struct { @"github.com/go-xorm/xorm".colName string; @"github.com/go-xorm/xorm".arg interface {} }
+	type @"github.com/go-xorm/xorm".decrParam struct { @"github.com/go-xorm/xorm".colName string; @"github.com/go-xorm/xorm".arg interface {} }
+	type @"github.com/go-xorm/xorm".exprParam struct { @"github.com/go-xorm/xorm".colName string; @"github.com/go-xorm/xorm".expr string }
+	type @"github.com/go-xorm/xorm".Statement struct { RefTable *@"github.com/go-xorm/core".Table; Engine *@"github.com/go-xorm/xorm".Engine; Start int; LimitN int; WhereStr string; IdParam *@"github.com/go-xorm/core".PK; Params []interface {}; OrderStr string; JoinStr string; GroupByStr string; HavingStr string; ColumnStr string; @"github.com/go-xorm/xorm".columnMap map[string]bool; @"github.com/go-xorm/xorm".useAllCols bool; OmitStr string; ConditionStr string; AltTableName string; RawSQL string; RawParams []interface {}; UseCascade bool; UseAutoJoin bool; StoreEngine string; Charset string; BeanArgs []interface {}; UseCache bool; UseAutoTime bool; IsDistinct bool; TableAlias string; @"github.com/go-xorm/xorm".allUseBool bool; @"github.com/go-xorm/xorm".checkVersion bool; @"github.com/go-xorm/xorm".unscoped bool; @"github.com/go-xorm/xorm".mustColumnMap map[string]bool; @"github.com/go-xorm/xorm".inColumns map[string]*@"github.com/go-xorm/xorm".inParam; @"github.com/go-xorm/xorm".incrColumns map[string]@"github.com/go-xorm/xorm".incrParam; @"github.com/go-xorm/xorm".decrColumns map[string]@"github.com/go-xorm/xorm".decrParam; @"github.com/go-xorm/xorm".exprColumns map[string]@"github.com/go-xorm/xorm".exprParam }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Alias (@"github.com/go-xorm/xorm".aliasÂ·3 string) (? *@"github.com/go-xorm/xorm".Statement) { @"github.com/go-xorm/xorm".statementÂ·2.TableAlias = @"github.com/go-xorm/xorm".aliasÂ·3; return @"github.com/go-xorm/xorm".statementÂ·2 }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") AllCols () (? *@"github.com/go-xorm/xorm".Statement) { @"github.com/go-xorm/xorm".statementÂ·2.@"github.com/go-xorm/xorm".useAllCols = true; return @"github.com/go-xorm/xorm".statementÂ·2 }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) And (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) Asc (@"github.com/go-xorm/xorm".colNamesÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) Cols (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Decr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) Desc (@"github.com/go-xorm/xorm".colNamesÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) Distinct (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") GroupBy (@"github.com/go-xorm/xorm".keysÂ·3 string) (? *@"github.com/go-xorm/xorm".Statement) { @"github.com/go-xorm/xorm".statementÂ·2.GroupByStr = @"github.com/go-xorm/xorm".keysÂ·3; return @"github.com/go-xorm/xorm".statementÂ·2 }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Having (@"github.com/go-xorm/xorm".conditionsÂ·3 string) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Id (@"github.com/go-xorm/xorm".idÂ·3 interface {}) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) In (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Incr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·1 *@"github.com/go-xorm/xorm".Statement "esc:0x0") Init ()
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) Join (@"github.com/go-xorm/xorm".join_operatorÂ·3 string, @"github.com/go-xorm/xorm".tablenameÂ·4 interface {}, @"github.com/go-xorm/xorm".conditionÂ·5 string) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) JoinColumns (@"github.com/go-xorm/xorm".colsÂ·3 []*@"github.com/go-xorm/core".Column "esc:0x0") (? string)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Limit (@"github.com/go-xorm/xorm".limitÂ·3 int, @"github.com/go-xorm/xorm".startÂ·4 ...int "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") MustCols (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·1 *@"github.com/go-xorm/xorm".Statement) Omit (@"github.com/go-xorm/xorm".columnsÂ·2 ...string "esc:0x0")
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) Or (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") OrderBy (@"github.com/go-xorm/xorm".orderÂ·3 string) (? *@"github.com/go-xorm/xorm".Statement) { if @"github.com/go-xorm/xorm".statementÂ·2.OrderStr != "" { @"github.com/go-xorm/xorm".statementÂ·2.OrderStr += ", " }; @"github.com/go-xorm/xorm".statementÂ·2.OrderStr += @"github.com/go-xorm/xorm".orderÂ·3; return @"github.com/go-xorm/xorm".statementÂ·2 }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") SetExpr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".expressionÂ·4 string) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Sql (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) Table (@"github.com/go-xorm/xorm".tableNameOrBeanÂ·3 interface {}) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x1") TableName () (? string) { if @"github.com/go-xorm/xorm".statementÂ·2.AltTableName != "" { return @"github.com/go-xorm/xorm".statementÂ·2.AltTableName }; if @"github.com/go-xorm/xorm".statementÂ·2.RefTable != nil { return @"github.com/go-xorm/xorm".statementÂ·2.RefTable.Name }; return "" }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Top (@"github.com/go-xorm/xorm".limitÂ·3 int) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") Unscoped () (? *@"github.com/go-xorm/xorm".Statement) { @"github.com/go-xorm/xorm".statementÂ·2.@"github.com/go-xorm/xorm".unscoped = true; return @"github.com/go-xorm/xorm".statementÂ·2 }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x2") UseBool (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) Where (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Statement)
+	func (@"github.com/go-xorm/xorm".statementÂ·1 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".attachInSql ()
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".col2NewColsWithQuote (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? []string)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".convertIdSql (@"github.com/go-xorm/xorm".sqlStrÂ·3 string) (? string)
+	func (@"github.com/go-xorm/xorm".statementÂ·3 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".convertUpdateSql (@"github.com/go-xorm/xorm".sqlStrÂ·4 string) (? string, ? string)
+	func (@"github.com/go-xorm/xorm".sÂ·3 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genAddColumnStr (@"github.com/go-xorm/xorm".colÂ·4 *@"github.com/go-xorm/core".Column) (? string, ? []interface {})
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genColumnStr () (? string)
+	func (@"github.com/go-xorm/xorm".statementÂ·3 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genCountSql (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? string, ? []interface {})
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genCreateTableSQL () (? string)
+	func (@"github.com/go-xorm/xorm".sÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genDelIndexSQL () (? []string)
+	func (@"github.com/go-xorm/xorm".sÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genDropSQL () (? string)
+	func (@"github.com/go-xorm/xorm".statementÂ·3 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genGetSql (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? string, ? []interface {})
+	func (@"github.com/go-xorm/xorm".statementÂ·3 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genInSql () (? string, ? []interface {})
+	func (@"github.com/go-xorm/xorm".sÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genIndexSQL () (? []string)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genSelectSql (@"github.com/go-xorm/xorm".columnStrÂ·3 string) (@"github.com/go-xorm/xorm".aÂ·1 string)
+	func (@"github.com/go-xorm/xorm".sÂ·2 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".genUniqueSQL () (? []string)
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x1") @"github.com/go-xorm/xorm".getDec () (? map[string]@"github.com/go-xorm/xorm".decrParam) { return @"github.com/go-xorm/xorm".statementÂ·2.@"github.com/go-xorm/xorm".decrColumns }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x1") @"github.com/go-xorm/xorm".getExpr () (? map[string]@"github.com/go-xorm/xorm".exprParam) { return @"github.com/go-xorm/xorm".statementÂ·2.@"github.com/go-xorm/xorm".exprColumns }
+	func (@"github.com/go-xorm/xorm".statementÂ·2 *@"github.com/go-xorm/xorm".Statement "esc:0x1") @"github.com/go-xorm/xorm".getInc () (? map[string]@"github.com/go-xorm/xorm".incrParam) { return @"github.com/go-xorm/xorm".statementÂ·2.@"github.com/go-xorm/xorm".incrColumns }
+	func (@"github.com/go-xorm/xorm".statementÂ·1 *@"github.com/go-xorm/xorm".Statement) @"github.com/go-xorm/xorm".processIdParam ()
+	type @"github.com/go-xorm/xorm".IterFunc func(@"github.com/go-xorm/xorm".idx int, @"github.com/go-xorm/xorm".bean interface {}) (? error)
+	type @"github.com/go-xorm/xorm".Rows struct { NoTypeCheck bool; @"github.com/go-xorm/xorm".session *@"github.com/go-xorm/xorm".Session; @"github.com/go-xorm/xorm".stmt *@"github.com/go-xorm/core".Stmt; @"github.com/go-xorm/xorm".rows *@"github.com/go-xorm/core".Rows; @"github.com/go-xorm/xorm".fields []string; @"github.com/go-xorm/xorm".fieldsCount int; @"github.com/go-xorm/xorm".beanType @"reflect".Type; @"github.com/go-xorm/xorm".lastError error }
+	func (@"github.com/go-xorm/xorm".rowsÂ·2 *@"github.com/go-xorm/xorm".Rows) Close () (? error)
+	func (@"github.com/go-xorm/xorm".rowsÂ·2 *@"github.com/go-xorm/xorm".Rows "esc:0x1") Err () (? error) { return @"github.com/go-xorm/xorm".rowsÂ·2.@"github.com/go-xorm/xorm".lastError }
+	func (@"github.com/go-xorm/xorm".rowsÂ·2 *@"github.com/go-xorm/xorm".Rows) Next () (? bool)
+	func (@"github.com/go-xorm/xorm".rowsÂ·2 *@"github.com/go-xorm/xorm".Rows) Scan (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? error)
+	type @"time".Month int
+	func (@"time".mÂ·2 @"time".Month) String () (? string) { return @"time".months[@"time".mÂ·2 - @"time".Month(0x1)] }
+	type @"time".Weekday int
+	func (@"time".dÂ·2 @"time".Weekday) String () (? string) { return @"time".days[@"time".dÂ·2] }
+	type @"time".Time struct { @"time".sec int64; @"time".nsec int32; @"time".loc *@"time".Location }
+	func (@"time".tÂ·2 @"time".Time "esc:0x2") Add (@"time".dÂ·3 @"time".Duration) (? @"time".Time)
+	func (@"time".tÂ·2 @"time".Time "esc:0x2") AddDate (@"time".yearsÂ·3 int, @"time".monthsÂ·4 int, @"time".daysÂ·5 int) (? @"time".Time)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") After (@"time".uÂ·3 @"time".Time "esc:0x0") (? bool) { return @"time".tÂ·2.@"time".sec > @"time".uÂ·3.@"time".sec || @"time".tÂ·2.@"time".sec == @"time".uÂ·3.@"time".sec && @"time".tÂ·2.@"time".nsec > @"time".uÂ·3.@"time".nsec }
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Before (@"time".uÂ·3 @"time".Time "esc:0x0") (? bool) { return @"time".tÂ·2.@"time".sec < @"time".uÂ·3.@"time".sec || @"time".tÂ·2.@"time".sec == @"time".uÂ·3.@"time".sec && @"time".tÂ·2.@"time".nsec < @"time".uÂ·3.@"time".nsec }
+	func (@"time".tÂ·4 @"time".Time "esc:0x0") Clock () (@"time".hourÂ·1 int, @"time".minÂ·2 int, @"time".secÂ·3 int)
+	func (@"time".tÂ·4 @"time".Time "esc:0x0") Date () (@"time".yearÂ·1 int, @"time".monthÂ·2 @"time".Month, @"time".dayÂ·3 int)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Day () (? int)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Equal (@"time".uÂ·3 @"time".Time "esc:0x0") (? bool) { return @"time".tÂ·2.@"time".sec == @"time".uÂ·3.@"time".sec && @"time".tÂ·2.@"time".nsec == @"time".uÂ·3.@"time".nsec }
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Format (@"time".layoutÂ·3 string "esc:0x0") (? string)
+	func (@"time".tÂ·2 *@"time".Time "esc:0x0") GobDecode (@"time".dataÂ·3 []byte "esc:0x0") (? error)
+	func (@"time".tÂ·3 @"time".Time "esc:0x0") GobEncode () (? []byte, ? error)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Hour () (? int)
+	func (@"time".tÂ·3 @"time".Time "esc:0x0") ISOWeek () (@"time".yearÂ·1 int, @"time".weekÂ·2 int)
+	func (@"time".tÂ·2 @"time".Time "esc:0x2") In (@"time".locÂ·3 *@"time".Location "esc:0x2") (? @"time".Time)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") IsZero () (? bool) { return @"time".tÂ·2.@"time".sec == 0x0 && @"time".tÂ·2.@"time".nsec == 0x0 }
+	func (@"time".tÂ·2 @"time".Time "esc:0x2") Local () (? @"time".Time) { @"time".tÂ·2.@"time".loc = @"time".Local; return @"time".tÂ·2 }
+	func (@"time".tÂ·2 @"time".Time "esc:0x2") Location () (? *@"time".Location) { var @"time".lÂ·3 *@"time".Location; ; @"time".lÂ·3 = @"time".tÂ·2.@"time".loc; if @"time".lÂ·3 == nil { @"time".lÂ·3 = @"time".UTC }; return @"time".lÂ·3 }
+	func (@"time".tÂ·3 @"time".Time "esc:0x0") MarshalBinary () (? []byte, ? error)
+	func (@"time".tÂ·3 @"time".Time "esc:0x0") MarshalJSON () (? []byte, ? error)
+	func (@"time".tÂ·3 @"time".Time "esc:0x0") MarshalText () (? []byte, ? error)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Minute () (? int)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Month () (? @"time".Month)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Nanosecond () (? int) { return int(@"time".tÂ·2.@"time".nsec) }
+	func (@"time".tÂ·2 @"time".Time "esc:0x2") Round (@"time".dÂ·3 @"time".Duration) (? @"time".Time)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Second () (? int)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") String () (? string)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Sub (@"time".uÂ·3 @"time".Time "esc:0x0") (? @"time".Duration)
+	func (@"time".tÂ·2 @"time".Time "esc:0x2") Truncate (@"time".dÂ·3 @"time".Duration) (? @"time".Time)
+	func (@"time".tÂ·2 @"time".Time "esc:0x2") UTC () (? @"time".Time) { @"time".tÂ·2.@"time".loc = @"time".UTC; return @"time".tÂ·2 }
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Unix () (? int64) { return @"time".tÂ·2.@"time".sec + -0xE7791F700 }
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") UnixNano () (? int64) { return (@"time".tÂ·2.@"time".sec + -0xE7791F700) * 0x3B9ACA00 + int64(@"time".tÂ·2.@"time".nsec) }
+	func (@"time".tÂ·2 *@"time".Time "esc:0x0") UnmarshalBinary (@"time".dataÂ·3 []byte "esc:0x0") (? error)
+	func (@"time".tÂ·2 *@"time".Time "esc:0x0") UnmarshalJSON (@"time".dataÂ·3 []byte "esc:0x0") (@"time".errÂ·1 error)
+	func (@"time".tÂ·2 *@"time".Time "esc:0x0") UnmarshalText (@"time".dataÂ·3 []byte "esc:0x0") (@"time".errÂ·1 error)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Weekday () (? @"time".Weekday)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") Year () (? int)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") YearDay () (? int)
+	func (@"time".tÂ·3 @"time".Time "esc:0x0") Zone () (@"time".nameÂ·1 string, @"time".offsetÂ·2 int)
+	func (@"time".tÂ·2 @"time".Time "esc:0x0") @"time".abs () (? uint64)
+	func (@"time".tÂ·5 @"time".Time "esc:0x0") @"time".date (@"time".fullÂ·6 bool) (@"time".yearÂ·1 int, @"time".monthÂ·2 @"time".Month, @"time".dayÂ·3 int, @"time".ydayÂ·4 int)
+	func (@"time".tÂ·4 @"time".Time "esc:0x1") @"time".locabs () (@"time".nameÂ·1 string, @"time".offsetÂ·2 int, @"time".absÂ·3 uint64)
+	type @"github.com/go-xorm/xorm".Session struct { @"github.com/go-xorm/xorm".db *@"github.com/go-xorm/core".DB; Engine *@"github.com/go-xorm/xorm".Engine; Tx *@"github.com/go-xorm/core".Tx; Statement @"github.com/go-xorm/xorm".Statement; IsAutoCommit bool; IsCommitedOrRollbacked bool; TransType string; IsAutoClose bool; AutoResetStatement bool; @"github.com/go-xorm/xorm".afterInsertBeans map[interface {}]*[]func(? interface {}); @"github.com/go-xorm/xorm".afterUpdateBeans map[interface {}]*[]func(? interface {}); @"github.com/go-xorm/xorm".afterDeleteBeans map[interface {}]*[]func(? interface {}); @"github.com/go-xorm/xorm".beforeClosures []func(? interface {}); @"github.com/go-xorm/xorm".afterClosures []func(? interface {}); @"github.com/go-xorm/xorm".stmtCache map[uint32]*@"github.com/go-xorm/core".Stmt; @"github.com/go-xorm/xorm".cascadeDeep int }
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) After (@"github.com/go-xorm/xorm".closuresÂ·3 func(? interface {})) (? *@"github.com/go-xorm/xorm".Session) { if @"github.com/go-xorm/xorm".closuresÂ·3 != nil { @"github.com/go-xorm/xorm".sessionÂ·2.@"github.com/go-xorm/xorm".afterClosures = append(@"github.com/go-xorm/xorm".sessionÂ·2.@"github.com/go-xorm/xorm".afterClosures, @"github.com/go-xorm/xorm".closuresÂ·3) }; return @"github.com/go-xorm/xorm".sessionÂ·2 }
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Alias (@"github.com/go-xorm/xorm".aliasÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") AllCols () (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) And (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Asc (@"github.com/go-xorm/xorm".colNamesÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Before (@"github.com/go-xorm/xorm".closuresÂ·3 func(? interface {})) (? *@"github.com/go-xorm/xorm".Session) { if @"github.com/go-xorm/xorm".closuresÂ·3 != nil { @"github.com/go-xorm/xorm".sessionÂ·2.@"github.com/go-xorm/xorm".beforeClosures = append(@"github.com/go-xorm/xorm".sessionÂ·2.@"github.com/go-xorm/xorm".beforeClosures, @"github.com/go-xorm/xorm".closuresÂ·3) }; return @"github.com/go-xorm/xorm".sessionÂ·2 }
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Begin () (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Cascade (@"github.com/go-xorm/xorm".trueOrFalseÂ·3 ...bool "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Charset (@"github.com/go-xorm/xorm".charsetÂ·3 string) (? *@"github.com/go-xorm/xorm".Session) { @"github.com/go-xorm/xorm".sessionÂ·2.Statement.Charset = @"github.com/go-xorm/xorm".charsetÂ·3; return @"github.com/go-xorm/xorm".sessionÂ·2 }
+	func (@"github.com/go-xorm/xorm".sessionÂ·1 *@"github.com/go-xorm/xorm".Session) Close ()
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Cols (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Commit () (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) Count (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) CreateIndexes (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) CreateTable (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) CreateUniques (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) DB () (? *@"github.com/go-xorm/core".DB) { if @"github.com/go-xorm/xorm".sessionÂ·2.@"github.com/go-xorm/xorm".db == nil { @"github.com/go-xorm/xorm".sessionÂ·2.@"github.com/go-xorm/xorm".db = @"github.com/go-xorm/xorm".sessionÂ·2.Engine.@"github.com/go-xorm/xorm".db; @"github.com/go-xorm/xorm".sessionÂ·2.@"github.com/go-xorm/xorm".stmtCache = make(map[uint32]*@"github.com/go-xorm/core".Stmt, 0x0) }; return @"github.com/go-xorm/xorm".sessionÂ·2.@"github.com/go-xorm/xorm".db }
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Decr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) Delete (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Desc (@"github.com/go-xorm/xorm".colNamesÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Distinct (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) DropIndexes (@"github.com/go-xorm/xorm".beanÂ·3 interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) DropTable (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) Exec (@"github.com/go-xorm/xorm".sqlStrÂ·4 string, @"github.com/go-xorm/xorm".argsÂ·5 ...interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Find (@"github.com/go-xorm/xorm".rowsSlicePtrÂ·3 interface {}, @"github.com/go-xorm/xorm".condiBeanÂ·4 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) Get (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") GroupBy (@"github.com/go-xorm/xorm".keysÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Having (@"github.com/go-xorm/xorm".conditionsÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Id (@"github.com/go-xorm/xorm".idÂ·3 interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) In (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Incr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·1 *@"github.com/go-xorm/xorm".Session) Init ()
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) Insert (@"github.com/go-xorm/xorm".beansÂ·4 ...interface {} "esc:0x0") (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) InsertMulti (@"github.com/go-xorm/xorm".rowsSlicePtrÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) InsertOne (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) IsTableEmpty (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) IsTableExist (@"github.com/go-xorm/xorm".beanOrTableNameÂ·4 interface {}) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Iterate (@"github.com/go-xorm/xorm".beanÂ·3 interface {}, @"github.com/go-xorm/xorm".funÂ·4 @"github.com/go-xorm/xorm".IterFunc "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Join (@"github.com/go-xorm/xorm".join_operatorÂ·3 string, @"github.com/go-xorm/xorm".tablenameÂ·4 interface {}, @"github.com/go-xorm/xorm".conditionÂ·5 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Limit (@"github.com/go-xorm/xorm".limitÂ·3 int, @"github.com/go-xorm/xorm".startÂ·4 ...int "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") MustCols (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") NoAutoTime () (? *@"github.com/go-xorm/xorm".Session) { @"github.com/go-xorm/xorm".sessionÂ·2.Statement.UseAutoTime = false; return @"github.com/go-xorm/xorm".sessionÂ·2 }
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") NoCache () (? *@"github.com/go-xorm/xorm".Session) { @"github.com/go-xorm/xorm".sessionÂ·2.Statement.UseCache = false; return @"github.com/go-xorm/xorm".sessionÂ·2 }
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") NoCascade () (? *@"github.com/go-xorm/xorm".Session) { @"github.com/go-xorm/xorm".sessionÂ·2.Statement.UseCascade = false; return @"github.com/go-xorm/xorm".sessionÂ·2 }
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Omit (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Or (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") OrderBy (@"github.com/go-xorm/xorm".orderÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Ping () (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) Query (@"github.com/go-xorm/xorm".sqlStrÂ·4 string, @"github.com/go-xorm/xorm".paramStrÂ·5 ...interface {}) (@"github.com/go-xorm/xorm".resultsSliceÂ·1 []map[string][]byte, @"github.com/go-xorm/xorm".errÂ·2 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Rollback () (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) Rows (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? *@"github.com/go-xorm/xorm".Rows, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") SetExpr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".expressionÂ·4 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Sql (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") StoreEngine (@"github.com/go-xorm/xorm".storeEngineÂ·3 string) (? *@"github.com/go-xorm/xorm".Session) { @"github.com/go-xorm/xorm".sessionÂ·2.Statement.StoreEngine = @"github.com/go-xorm/xorm".storeEngineÂ·3; return @"github.com/go-xorm/xorm".sessionÂ·2 }
+	func (@"github.com/go-xorm/xorm".sÂ·2 *@"github.com/go-xorm/xorm".Session) Sync2 (@"github.com/go-xorm/xorm".beansÂ·3 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Table (@"github.com/go-xorm/xorm".tableNameOrBeanÂ·3 interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") Unscoped () (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) Update (@"github.com/go-xorm/xorm".beanÂ·4 interface {}, @"github.com/go-xorm/xorm".condiBeanÂ·5 ...interface {} "esc:0x0") (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session "esc:0x2") UseBool (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) Where (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm"._row2Bean (@"github.com/go-xorm/xorm".rowsÂ·3 *@"github.com/go-xorm/core".Rows "esc:0x0", @"github.com/go-xorm/xorm".fieldsÂ·4 []string "esc:0x0", @"github.com/go-xorm/xorm".fieldsCountÂ·5 int, @"github.com/go-xorm/xorm".beanÂ·6 interface {}, @"github.com/go-xorm/xorm".dataStructÂ·7 *@"reflect".Value, @"github.com/go-xorm/xorm".tableÂ·8 *@"github.com/go-xorm/core".Table) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".addColumn (@"github.com/go-xorm/xorm".colNameÂ·3 string "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".addIndex (@"github.com/go-xorm/xorm".tableNameÂ·3 string, @"github.com/go-xorm/xorm".idxNameÂ·4 string "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".addUnique (@"github.com/go-xorm/xorm".tableNameÂ·3 string, @"github.com/go-xorm/xorm".uqeNameÂ·4 string "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".byte2Time (@"github.com/go-xorm/xorm".colÂ·4 *@"github.com/go-xorm/core".Column, @"github.com/go-xorm/xorm".dataÂ·5 []byte "esc:0x0") (@"github.com/go-xorm/xorm".outTimeÂ·1 @"time".Time, @"github.com/go-xorm/xorm".outErrÂ·2 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".bytes2Value (@"github.com/go-xorm/xorm".colÂ·3 *@"github.com/go-xorm/core".Column, @"github.com/go-xorm/xorm".fieldValueÂ·4 *@"reflect".Value, @"github.com/go-xorm/xorm".dataÂ·5 []byte) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".cacheDelete (@"github.com/go-xorm/xorm".sqlStrÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".cacheFind (@"github.com/go-xorm/xorm".tÂ·3 @"reflect".Type, @"github.com/go-xorm/xorm".sqlStrÂ·4 string, @"github.com/go-xorm/xorm".rowsSlicePtrÂ·5 interface {}, @"github.com/go-xorm/xorm".argsÂ·6 ...interface {}) (@"github.com/go-xorm/xorm".errÂ·1 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".cacheGet (@"github.com/go-xorm/xorm".beanÂ·4 interface {}, @"github.com/go-xorm/xorm".sqlStrÂ·5 string, @"github.com/go-xorm/xorm".argsÂ·6 ...interface {}) (@"github.com/go-xorm/xorm".hasÂ·1 bool, @"github.com/go-xorm/xorm".errÂ·2 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".cacheInsert (@"github.com/go-xorm/xorm".tablesÂ·3 ...string "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".cacheUpdate (@"github.com/go-xorm/xorm".sqlStrÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".createAll () (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".createOneTable () (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".doPrepare (@"github.com/go-xorm/xorm".sqlStrÂ·4 string) (@"github.com/go-xorm/xorm".stmtÂ·1 *@"github.com/go-xorm/core".Stmt, @"github.com/go-xorm/xorm".errÂ·2 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".dropAll () (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".exec (@"github.com/go-xorm/xorm".sqlStrÂ·4 string, @"github.com/go-xorm/xorm".argsÂ·5 ...interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".getField (@"github.com/go-xorm/xorm".dataStructÂ·3 *@"reflect".Value, @"github.com/go-xorm/xorm".keyÂ·4 string, @"github.com/go-xorm/xorm".tableÂ·5 *@"github.com/go-xorm/core".Table, @"github.com/go-xorm/xorm".idxÂ·6 int) (? *@"reflect".Value)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".innerExec (@"github.com/go-xorm/xorm".sqlStrÂ·4 string, @"github.com/go-xorm/xorm".argsÂ·5 ...interface {} "esc:0x0") (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".innerInsert (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".innerInsertMulti (@"github.com/go-xorm/xorm".rowsSlicePtrÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".innerQuery (@"github.com/go-xorm/xorm".dbÂ·4 *@"github.com/go-xorm/core".DB, @"github.com/go-xorm/xorm".sqlStrÂ·5 string, @"github.com/go-xorm/xorm".paramsÂ·6 ...interface {}) (@"github.com/go-xorm/xorm".resultsSliceÂ·1 []map[string][]byte, @"github.com/go-xorm/xorm".errÂ·2 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".isIndexExist (@"github.com/go-xorm/xorm".tableNameÂ·4 string, @"github.com/go-xorm/xorm".idxNameÂ·5 string, @"github.com/go-xorm/xorm".uniqueÂ·6 bool) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".isIndexExist2 (@"github.com/go-xorm/xorm".tableNameÂ·4 string, @"github.com/go-xorm/xorm".colsÂ·5 []string, @"github.com/go-xorm/xorm".uniqueÂ·6 bool) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".isTableEmpty (@"github.com/go-xorm/xorm".tableNameÂ·4 string) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".isTableExist (@"github.com/go-xorm/xorm".tableNameÂ·4 string) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".query (@"github.com/go-xorm/xorm".sqlStrÂ·4 string, @"github.com/go-xorm/xorm".paramStrÂ·5 ...interface {}) (@"github.com/go-xorm/xorm".resultsSliceÂ·1 []map[string][]byte, @"github.com/go-xorm/xorm".errÂ·2 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".query2 (@"github.com/go-xorm/xorm".sqlStrÂ·4 string, @"github.com/go-xorm/xorm".paramStrÂ·5 ...interface {}) (@"github.com/go-xorm/xorm".resultsSliceÂ·1 []map[string]string, @"github.com/go-xorm/xorm".errÂ·2 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·1 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".queryPreprocess (@"github.com/go-xorm/xorm".sqlStrÂ·2 *string, @"github.com/go-xorm/xorm".paramStrÂ·3 ...interface {})
+	func (@"github.com/go-xorm/xorm".sessionÂ·1 *@"github.com/go-xorm/xorm".Session "esc:0x0") @"github.com/go-xorm/xorm".resetStatement ()
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".row2Bean (@"github.com/go-xorm/xorm".rowsÂ·3 *@"github.com/go-xorm/core".Rows "esc:0x0", @"github.com/go-xorm/xorm".fieldsÂ·4 []string "esc:0x0", @"github.com/go-xorm/xorm".fieldsCountÂ·5 int, @"github.com/go-xorm/xorm".beanÂ·6 interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".rows2Beans (@"github.com/go-xorm/xorm".rowsÂ·3 *@"github.com/go-xorm/core".Rows, @"github.com/go-xorm/xorm".fieldsÂ·4 []string "esc:0x0", @"github.com/go-xorm/xorm".fieldsCountÂ·5 int, @"github.com/go-xorm/xorm".tableÂ·6 *@"github.com/go-xorm/core".Table, @"github.com/go-xorm/xorm".newElemFuncÂ·7 func() (? @"reflect".Value) "esc:0x0", @"github.com/go-xorm/xorm".sliceValueSetFuncÂ·8 func(? *@"reflect".Value) "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·2 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".scanMapIntoStruct (@"github.com/go-xorm/xorm".objÂ·3 interface {}, @"github.com/go-xorm/xorm".objMapÂ·4 map[string][]byte "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session "esc:0x0") @"github.com/go-xorm/xorm".txQuery (@"github.com/go-xorm/xorm".txÂ·4 *@"github.com/go-xorm/core".Tx, @"github.com/go-xorm/xorm".sqlStrÂ·5 string, @"github.com/go-xorm/xorm".paramsÂ·6 ...interface {} "esc:0x0") (@"github.com/go-xorm/xorm".resultsSliceÂ·1 []map[string][]byte, @"github.com/go-xorm/xorm".errÂ·2 error)
+	func (@"github.com/go-xorm/xorm".sessionÂ·3 *@"github.com/go-xorm/xorm".Session) @"github.com/go-xorm/xorm".value2Interface (@"github.com/go-xorm/xorm".colÂ·4 *@"github.com/go-xorm/core".Column, @"github.com/go-xorm/xorm".fieldValueÂ·5 @"reflect".Value) (? interface {}, ? error)
+	import io "io" // indirect
+	type @"io".Writer interface { Write(@"io".p []byte) (@"io".n int, @"io".err error) }
+	type @"io".Reader interface { Read(@"io".p []byte) (@"io".n int, @"io".err error) }
+	type @"github.com/go-xorm/xorm".Engine struct { @"github.com/go-xorm/xorm".db *@"github.com/go-xorm/core".DB; @"github.com/go-xorm/xorm".dialect @"github.com/go-xorm/core".Dialect; ColumnMapper @"github.com/go-xorm/core".IMapper; TableMapper @"github.com/go-xorm/core".IMapper; TagIdentifier string; Tables map[@"reflect".Type]*@"github.com/go-xorm/core".Table; @"github.com/go-xorm/xorm".mutex *@"sync".RWMutex; Cacher @"github.com/go-xorm/core".Cacher; ShowSQL bool; ShowInfo bool; ShowErr bool; ShowDebug bool; ShowWarn bool; Logger @"github.com/go-xorm/core".ILogger; TZLocation *@"time".Location; @"github.com/go-xorm/xorm".disableGlobalCache bool }
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) After (@"github.com/go-xorm/xorm".closuresÂ·3 func(? interface {})) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Alias (@"github.com/go-xorm/xorm".aliasÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) AllCols () (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Asc (@"github.com/go-xorm/xorm".colNamesÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) AutoIncrStr () (? string)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Before (@"github.com/go-xorm/xorm".closuresÂ·3 func(? interface {})) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Cascade (@"github.com/go-xorm/xorm".trueOrFalseÂ·3 ...bool "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Charset (@"github.com/go-xorm/xorm".charsetÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) ClearCache (@"github.com/go-xorm/xorm".beansÂ·3 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) ClearCacheBean (@"github.com/go-xorm/xorm".beanÂ·3 interface {}, @"github.com/go-xorm/xorm".idÂ·4 string) (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Clone () (? *@"github.com/go-xorm/xorm".Engine, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Close () (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Cols (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Count (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) CreateIndexes (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) CreateTables (@"github.com/go-xorm/xorm".beansÂ·3 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) CreateUniques (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine "esc:0x1") DB () (? *@"github.com/go-xorm/core".DB) { return @"github.com/go-xorm/xorm".engineÂ·2.@"github.com/go-xorm/xorm".db }
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) DBMetas () (? []*@"github.com/go-xorm/core".Table, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) DataSourceName () (? string)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Decr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Delete (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Desc (@"github.com/go-xorm/xorm".colNamesÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine "esc:0x1") Dialect () (? @"github.com/go-xorm/core".Dialect) { return @"github.com/go-xorm/xorm".engineÂ·2.@"github.com/go-xorm/xorm".dialect }
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Distinct (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) DriverName () (? string)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) DropTables (@"github.com/go-xorm/xorm".beansÂ·3 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) DumpAll (@"github.com/go-xorm/xorm".wÂ·3 @"io".Writer) (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) DumpAllToFile (@"github.com/go-xorm/xorm".fpÂ·3 string) (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Exec (@"github.com/go-xorm/xorm".sqlÂ·4 string, @"github.com/go-xorm/xorm".argsÂ·5 ...interface {}) (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Find (@"github.com/go-xorm/xorm".beansÂ·3 interface {}, @"github.com/go-xorm/xorm".condiBeansÂ·4 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) FormatTime (@"github.com/go-xorm/xorm".sqlTypeNameÂ·3 string "esc:0x0", @"github.com/go-xorm/xorm".tÂ·4 @"time".Time "esc:0x2") (@"github.com/go-xorm/xorm".vÂ·1 interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Get (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine "esc:0x2") GobRegister (@"github.com/go-xorm/xorm".vÂ·3 interface {}) (? *@"github.com/go-xorm/xorm".Engine)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) GroupBy (@"github.com/go-xorm/xorm".keysÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Having (@"github.com/go-xorm/xorm".conditionsÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Id (@"github.com/go-xorm/xorm".idÂ·3 interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) IdOf (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? @"github.com/go-xorm/core".PK)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) IdOfV (@"github.com/go-xorm/xorm".rvÂ·3 @"reflect".Value) (? @"github.com/go-xorm/core".PK)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Import (@"github.com/go-xorm/xorm".rÂ·4 @"io".Reader) (? []@"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) ImportFile (@"github.com/go-xorm/xorm".ddlPathÂ·4 string) (? []@"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) In (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Incr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".argÂ·4 ...interface {} "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Insert (@"github.com/go-xorm/xorm".beansÂ·4 ...interface {} "esc:0x0") (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) InsertOne (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) IsTableEmpty (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) IsTableExist (@"github.com/go-xorm/xorm".beanOrTableNameÂ·4 interface {}) (? bool, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Iterate (@"github.com/go-xorm/xorm".beanÂ·3 interface {}, @"github.com/go-xorm/xorm".funÂ·4 @"github.com/go-xorm/xorm".IterFunc "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Join (@"github.com/go-xorm/xorm".join_operatorÂ·3 string, @"github.com/go-xorm/xorm".tablenameÂ·4 interface {}, @"github.com/go-xorm/xorm".conditionÂ·5 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Limit (@"github.com/go-xorm/xorm".limitÂ·3 int, @"github.com/go-xorm/xorm".startÂ·4 ...int "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) LogDebug (@"github.com/go-xorm/xorm".contentsÂ·2 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) LogDebugf (@"github.com/go-xorm/xorm".formatÂ·2 string, @"github.com/go-xorm/xorm".contentsÂ·3 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) LogError (@"github.com/go-xorm/xorm".contentsÂ·2 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) LogErrorf (@"github.com/go-xorm/xorm".formatÂ·2 string, @"github.com/go-xorm/xorm".contentsÂ·3 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) LogInfo (@"github.com/go-xorm/xorm".contentsÂ·2 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) LogInfof (@"github.com/go-xorm/xorm".formatÂ·2 string, @"github.com/go-xorm/xorm".contentsÂ·3 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) LogSQLExecutionTime (@"github.com/go-xorm/xorm".sqlStrÂ·4 string, @"github.com/go-xorm/xorm".argsÂ·5 interface {}, @"github.com/go-xorm/xorm".executionBlockÂ·6 func() (? @"database/sql".Result, ? error) "esc:0x0") (? @"database/sql".Result, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·4 *@"github.com/go-xorm/xorm".Engine) LogSQLQueryTime (@"github.com/go-xorm/xorm".sqlStrÂ·5 string, @"github.com/go-xorm/xorm".argsÂ·6 interface {}, @"github.com/go-xorm/xorm".executionBlockÂ·7 func() (? *@"github.com/go-xorm/core".Stmt, ? *@"github.com/go-xorm/core".Rows, ? error) "esc:0x0") (? *@"github.com/go-xorm/core".Stmt, ? *@"github.com/go-xorm/core".Rows, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) LogWarn (@"github.com/go-xorm/xorm".contentsÂ·2 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) LogWarnf (@"github.com/go-xorm/xorm".formatÂ·2 string, @"github.com/go-xorm/xorm".contentsÂ·3 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) MapCacher (@"github.com/go-xorm/xorm".beanÂ·2 interface {}, @"github.com/go-xorm/xorm".cacherÂ·3 @"github.com/go-xorm/core".Cacher)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) MustCols (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) NewDB () (? *@"github.com/go-xorm/core".DB, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) NewSession () (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) NoAutoTime () (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) NoCache () (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) NoCascade () (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) NowTime (@"github.com/go-xorm/xorm".sqlTypeNameÂ·3 string "esc:0x0") (? interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) NowTime2 (@"github.com/go-xorm/xorm".sqlTypeNameÂ·4 string "esc:0x0") (? interface {}, ? @"time".Time)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Omit (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) OrderBy (@"github.com/go-xorm/xorm".orderÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Ping () (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Query (@"github.com/go-xorm/xorm".sqlÂ·4 string, @"github.com/go-xorm/xorm".paramStrÂ·5 ...interface {}) (@"github.com/go-xorm/xorm".resultsSliceÂ·1 []map[string][]byte, @"github.com/go-xorm/xorm".errÂ·2 error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Quote (@"github.com/go-xorm/xorm".sqlÂ·3 string "esc:0x2") (? string)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) QuoteStr () (? string)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Rows (@"github.com/go-xorm/xorm".beanÂ·4 interface {}) (? *@"github.com/go-xorm/xorm".Rows, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine "esc:0x0") SetColumnMapper (@"github.com/go-xorm/xorm".mapperÂ·2 @"github.com/go-xorm/core".IMapper) { @"github.com/go-xorm/xorm".engineÂ·1.ColumnMapper = @"github.com/go-xorm/xorm".mapperÂ·2 }
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine "esc:0x0") SetDefaultCacher (@"github.com/go-xorm/xorm".cacherÂ·2 @"github.com/go-xorm/core".Cacher) { @"github.com/go-xorm/xorm".engineÂ·1.Cacher = @"github.com/go-xorm/xorm".cacherÂ·2 }
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine "esc:0x0") SetDisableGlobalCache (@"github.com/go-xorm/xorm".disableÂ·2 bool) { if @"github.com/go-xorm/xorm".engineÂ·1.@"github.com/go-xorm/xorm".disableGlobalCache != @"github.com/go-xorm/xorm".disableÂ·2 { @"github.com/go-xorm/xorm".engineÂ·1.@"github.com/go-xorm/xorm".disableGlobalCache = @"github.com/go-xorm/xorm".disableÂ·2 } }
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) SetExpr (@"github.com/go-xorm/xorm".columnÂ·3 string, @"github.com/go-xorm/xorm".expressionÂ·4 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) SetLogger (@"github.com/go-xorm/xorm".loggerÂ·2 @"github.com/go-xorm/core".ILogger)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine "esc:0x0") SetMapper (@"github.com/go-xorm/xorm".mapperÂ·2 @"github.com/go-xorm/core".IMapper)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) SetMaxConns (@"github.com/go-xorm/xorm".connsÂ·2 int)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) SetMaxIdleConns (@"github.com/go-xorm/xorm".connsÂ·2 int)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) SetMaxOpenConns (@"github.com/go-xorm/xorm".connsÂ·2 int)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine "esc:0x0") SetTableMapper (@"github.com/go-xorm/xorm".mapperÂ·2 @"github.com/go-xorm/core".IMapper) { @"github.com/go-xorm/xorm".engineÂ·1.TableMapper = @"github.com/go-xorm/xorm".mapperÂ·2 }
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Sql (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) SqlType (@"github.com/go-xorm/xorm".cÂ·3 *@"github.com/go-xorm/core".Column) (? string)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) StoreEngine (@"github.com/go-xorm/xorm".storeEngineÂ·3 string) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) SupportInsertMany () (? bool)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Sync (@"github.com/go-xorm/xorm".beansÂ·3 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Sync2 (@"github.com/go-xorm/xorm".beansÂ·3 ...interface {} "esc:0x0") (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine "esc:0x1") TZTime (@"github.com/go-xorm/xorm".tÂ·3 @"time".Time "esc:0x2") (? @"time".Time)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Table (@"github.com/go-xorm/xorm".tableNameOrBeanÂ·3 interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) TableInfo (@"github.com/go-xorm/xorm".beanÂ·3 interface {}) (? *@"github.com/go-xorm/core".Table)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Unscoped () (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·3 *@"github.com/go-xorm/xorm".Engine) Update (@"github.com/go-xorm/xorm".beanÂ·4 interface {}, @"github.com/go-xorm/xorm".condiBeansÂ·5 ...interface {} "esc:0x0") (? int64, ? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) UseBool (@"github.com/go-xorm/xorm".columnsÂ·3 ...string "esc:0x0") (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) Where (@"github.com/go-xorm/xorm".querystringÂ·3 string, @"github.com/go-xorm/xorm".argsÂ·4 ...interface {}) (? *@"github.com/go-xorm/xorm".Session)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".autoMapType (@"github.com/go-xorm/xorm".vÂ·3 @"reflect".Value) (? *@"github.com/go-xorm/core".Table)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".autoQuote (@"github.com/go-xorm/xorm".colÂ·3 string "esc:0x0") (? string)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".createAll () (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".dropAll () (? error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".getCacher (@"github.com/go-xorm/xorm".vÂ·3 @"reflect".Value) (? @"github.com/go-xorm/core".Cacher)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine "esc:0x0") @"github.com/go-xorm/xorm".getCacher2 (@"github.com/go-xorm/xorm".tableÂ·3 *@"github.com/go-xorm/core".Table "esc:0x1") (? @"github.com/go-xorm/core".Cacher) { return @"github.com/go-xorm/xorm".tableÂ·3.Cacher }
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".logSQL (@"github.com/go-xorm/xorm".sqlStrÂ·2 string, @"github.com/go-xorm/xorm".sqlArgsÂ·3 ...interface {})
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".mapType (@"github.com/go-xorm/xorm".vÂ·3 @"reflect".Value) (? *@"github.com/go-xorm/core".Table)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".mapping (@"github.com/go-xorm/xorm".beansÂ·3 ...interface {} "esc:0x0") (@"github.com/go-xorm/xorm".eÂ·1 error)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".newTable () (? *@"github.com/go-xorm/core".Table)
+	func (@"github.com/go-xorm/xorm".engineÂ·1 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".overrideLogLevel (@"github.com/go-xorm/xorm".overrideLevelÂ·2 @"github.com/go-xorm/core".LogLevel)
+	func (@"github.com/go-xorm/xorm".engineÂ·2 *@"github.com/go-xorm/xorm".Engine) @"github.com/go-xorm/xorm".unMap (@"github.com/go-xorm/xorm".beansÂ·3 ...interface {} "esc:0x0") (@"github.com/go-xorm/xorm".eÂ·1 error)
+	var @"".XormRead *@"github.com/go-xorm/xorm".Engine
+	var @"".XormWriter *@"github.com/go-xorm/xorm".Engine
+	type @"".HaiouMemberAddress struct { Id int64; Name string }
+	func @"".init ()
+	type @"sync".rlocker struct { @"sync".w @"sync".Mutex; @"sync".writerSem uint32; @"sync".readerSem uint32; @"sync".readerCount int32; @"sync".readerWait int32 }
+	func (@"sync".rÂ·1 *@"sync".rlocker) Lock ()
+	func (@"sync".rÂ·1 *@"sync".rlocker) Unlock ()
+	var @"io".EOF error
+	var @"database/sql".ErrTxDone error
+	var @"github.com/go-xorm/core".SqlTypes map[string]int
+	var @"time".months [12]string
+	var @"time".days [7]string
+	var @"time".Local *@"time".Location
+	var @"time".UTC *@"time".Location
+
+$$
+_go_.6          0           0     0     644     15787     `
+go object linux amd64 go1.4.1 X:precisestack
+
+!
+  go13ld
+fmt.a:github.com/Unknwon/goconfig.a@github.com/go-sql-driver/mysql.a2github.com/go-xorm/xorm.a ş"".initÂ·1  à  ŞdH‹%    HD$àH;Awè    ëåHì    HÇD$H    HÇD$P    H    H,$H‰ïH‰ŞH¥H¥H\$HÇ    HÇC    HÇC    è    H‹D$0H‹\$8H‰\$PHƒø H‰D$H„  H    H‹+H‰l$hH‹kH‰l$pH\$xHÇ    HÇC    H\$xHƒû „×   HÇÂ   HÇÁ   H‰œ$ˆ   H‰”$   H‰Œ$˜   H    H‰$H\$hH‰\$è    H‹L$H‹D$H‹œ$ˆ   H‰$H‰L$XH‰L$H‰D$`H‰D$è    H‹œ$ˆ   H‰$H‹œ$   H‰\$H‹œ$˜   H‰\$è    HÇD$@   H    H‰$H\$@H‰\$è    H\$H,$H‰ïH‰ŞH¥H¥è    ‰é"ÿÿÿH    H,$H‰ïH‰ŞH¥H¥H    Hl$H‰ïH‰ŞH¥H¥è    H‹D$ H‹\$(H‰\$HH‹\$0H‰\$PH    H‰$H‰D$è    Hƒ|$H „  H    H‹+H‰l$hH‹kH‰l$pH\$xHÇ    HÇC    H\$xHƒû „×   HÇÁ   HÇÂ   H‰œ$ˆ   H‰Œ$   H‰”$˜   H    H‰$H\$hH‰\$è    H‹L$H‹D$H‹œ$ˆ   H‰$H‰L$XH‰L$H‰D$`H‰D$è    H‹œ$ˆ   H‰$H‹œ$   H‰\$H‹œ$˜   H‰\$è    HÇD$@   H    H‰$H\$@H‰\$è    H\$H,$H‰ïH‰ŞH¥H¥è    ‰é"ÿÿÿH    H,$H‰ïH‰ŞH¥H¥H    Hl$H‰ïH‰ŞH¥H¥è    H‹D$ H‹\$(H‰\$HH‹\$0H‰\$PH    H‰$H‰D$è    Hƒ|$H „  H    H‹+H‰l$hH‹kH‰l$pH\$xHÇ    HÇC    H\$xHƒû „×   HÇÁ   HÇÂ   H‰œ$ˆ   H‰Œ$   H‰”$˜   H    H‰$H\$hH‰\$è    H‹L$H‹D$H‹œ$ˆ   H‰$H‰L$XH‰L$H‰D$`H‰D$è    H‹œ$ˆ   H‰$H‹œ$   H‰\$H‹œ$˜   H‰\$è    HÇD$@   H    H‰$H\$@H‰\$è    H\$H,$H‰ïH‰ŞH¥H¥è    ‰é"ÿÿÿHÄ    ÃL
+      *  0runtime.morestack_noctxt   n  Bgo.string."haioo/conf/config.ini"   Ì  Tgithub.com/Unknwon/goconfig.LoadConfigFile   –  Vgo.string."è¯»å–config.iniæ–‡ä»¶å¤±è´¥ï¼š"   Ø  type.string   ş  runtime.convT2E   Ü  2runtime.writebarrieriface   ²  fmt.Println   Ò  type.int   ø  runtime.convT2E   ¨  runtime.gopanic   È  "go.string."mysql"   ò  Œgo.string."root:haiootest&!#*!$@tcp(218.6.173.156:3306)/?charset=utf8"   š  Bgithub.com/go-xorm/xorm.NewEngine   Ú  "".XormRead   ö  .runtime.writebarrierptr   œ  <go.string."è¿æ¥ä»åº“å¤±è´¥"   Ş	  type.string   „
+  runtime.convT2E   â
+  2runtime.writebarrieriface   ¸  fmt.Println   Ø  type.int   ş  runtime.convT2E   ®  runtime.gopanic   Î  "go.string."mysql"   ø  Œgo.string."root:haiootest&!#*!$@tcp(218.6.173.156:3306)/?charset=utf8"      Bgithub.com/go-xorm/xorm.NewEngine   à  "".XormWriter   ü  .runtime.writebarrierptr   ¢  <go.string."è¿æ¥ä¸»åº“å¤±è´¥"   ä  type.string   Š  runtime.convT2E   è  2runtime.writebarrieriface   ¾  fmt.Println   Ş  type.int   „  runtime.convT2E   ´  runtime.gopanic    À  &"".autotmp_0019  "type.interface {} "".autotmp_0018  *type.*[1]interface {} "".autotmp_0017  &type.[]interface {} "".autotmp_0016  Htype.*github.com/go-xorm/xorm.Engine "".autotmp_0015  "type.interface {} "".autotmp_0014  *type.*[1]interface {} "".autotmp_0013  &type.[]interface {} "".autotmp_0011 "type.interface {} "".autotmp_0009 /&type.[]interface {} "".autotmp_0008  type.int "".autotmp_0007  type.string "".autotmp_0006  (type.[1]interface {} "".autotmp_0005  type.int "".autotmp_0004  type.string "".autotmp_0003  (type.[1]interface {} "".autotmp_0002 ¿type.int "".autotmp_0001 otype.string "".autotmp_0000 O(type.[1]interface {} "".err ¯type.error "ÀŒ	¿ °	 P$"EÕ=
+^Õ=^Õ=	 < e™Z#‡Z#‡Z#/ TgclocalsÂ·0372b889336bbdf612862c172920463d TgclocalsÂ·4dec02d8dc04a0e7c72b54f257fea975   l/home/ganxiangdong/project/go/src/haioo/models/base.goş"".init  À  ¼dH‹%    H;awè    ëê¶    €û t¶    €ûuÃè    Æ    è    è    è    è    è    Æ    Ã
+         0runtime.morestack_noctxt   2  "".initdoneÂ·   J  "".initdoneÂ·   `  "runtime.throwinit   p "".initdoneÂ·   |  8github.com/go-xorm/xorm.init   †  Fgithub.com/go-sql-driver/mysql.init     @github.com/Unknwon/goconfig.init   š  fmt.init   ¤  "".initÂ·1   ° "".initdoneÂ·        ` ` ` 
+ /1 TgclocalsÂ·3280bececceccd33cb74587feedb1f9f TgclocalsÂ·3280bececceccd33cb74587feedb1f9f   z/home/ganxiangdong/project/go/src/haioo/models/haiouMember.goş4type..hash.[1]interface {} à  ÎdH‹%    H;awè    ëêHƒì0H‹L$H1ÀHÇD$    H‹l$ H9è}eH‰D$(H‰ÅH‰ÈHÁÀH»¿c»kïR H¯ØH‰ØH‹\$8Hƒû tDHkíHëH‰$HÇD$   H‰D$HH‰D$è    H‹L$H‹D$(HÿÀH‹l$ H9è|›H‰L$PHƒÄ0Ã‰ë¸
+         0runtime.morestack_noctxt   ü  (runtime.nilinterhash   @`  "".autotmp_0031 type.int "".autotmp_0030 type.int "".~r3 0type.uintptr "".h  type.uintptr "".s type.uintptr "".p  *type.*[1]interface {} `ˆ_` ° ° 
+ }3 TgclocalsÂ·2dc77d960dd3e4b3de2361f9cbd75783 TgclocalsÂ·3280bececceccd33cb74587feedb1f9f   l/home/ganxiangdong/project/go/src/haioo/models/base.goş0type..eq.[1]interface {} à  ÈdH‹%    H;awè    ëêHƒìX1ÀHÇD$(   H‹l$(H9è’   H‰D$0H‹\$hHƒû „–   H‰ÅHkíHëH‹H‹sH‹\$`Hƒû tvH‰ÅHkíHëH‹H‹SH9ÈuVH‰D$8H‰$H‰T$@H‰T$H‰L$HH‰L$H‰t$PH‰t$è    ¶\$ €û t H‹D$0HÿÀH‹l$(H9èŒnÿÿÿÆD$xHƒÄXÃÆD$x HƒÄXÃ‰ë†‰écÿÿÿ
+         0runtime.morestack_noctxt   Â  runtime.efaceeq   @°  "".autotmp_0035 ?"type.interface {} "".autotmp_0034 "type.interface {} "".autotmp_0033 _type.int "".autotmp_0032 Otype.int "".~r3 0type.bool "".s  type.uintptr "".q *type.*[1]interface {} "".p  *type.*[1]interface {} &°´¯°	¯° ğ ğ   P TgclocalsÂ·9c703c5c7b9c1932c840b69f8ebce236 TgclocalsÂ·44568aa369055d8938d809aa5d80843b   l/home/ganxiangdong/project/go/src/haioo/models/base.goş@type..hash."".HaiouMemberAddress À  ªdH‹%    H;awè    ëêHƒì H‹\$(H‰$Hƒ<$ tbHÇD$   H‹\$8H‰\$è    H‹D$H‹\$(H‰$Hƒ<$ t,Hƒ$HÇD$   H‰D$8H‰D$è    H‹\$H‰\$@HƒÄ Ã‰%    ëË‰%    ë•
+         0runtime.morestack_noctxt   |  runtime.memhash   à  runtime.strhash   @@  
+"".autotmp_0037  type.uintptr "".~r3 0type.uintptr "".h  type.uintptr "".s type.uintptr "".p  6type.*"".HaiouMemberAddress @h?@     
+ =c TgclocalsÂ·2dc77d960dd3e4b3de2361f9cbd75783 TgclocalsÂ·3280bececceccd33cb74587feedb1f9f   l/home/ganxiangdong/project/go/src/haioo/models/base.goş<type..eq."".HaiouMemberAddress À  °dH‹%    H;awè    ëêHƒìHH‹L$PH‹D$XH‹H‹(H9ët
+ÆD$h HƒÄHÃH‹qH‹IH‹PH‹@H9Áu@H‰t$8H‰4$H‰L$@H‰L$H‰T$(H‰T$H‰D$0H‰D$è    ¶\$ €û t
+ÆD$hHƒÄHÃÆD$h HƒÄHÃ
+         0runtime.morestack_noctxt   ì   runtime.eqstring   @  "".autotmp_0039 ?type.string "".autotmp_0038 type.string "".~r3 0type.bool "".s  type.uintptr "".q 6type.*"".HaiouMemberAddress "".p  6type.*"".HaiouMemberAddress *T		     
+ u+ TgclocalsÂ·9c703c5c7b9c1932c840b69f8ebce236 TgclocalsÂ·44568aa369055d8938d809aa5d80843b   l/home/ganxiangdong/project/go/src/haioo/models/base.goşBgo.string."haioo/conf/config.ini" P  L               haioo/conf/config.ini    Bgo.string."haioo/conf/config.ini"   şVgo.string."è¯»å–config.iniæ–‡ä»¶å¤±è´¥ï¼š" `  `               è¯»å–config.iniæ–‡ä»¶å¤±è´¥ï¼š    Vgo.string."è¯»å–config.iniæ–‡ä»¶å¤±è´¥ï¼š"   ş"go.string."mysql" 0  ,               mysql    "go.string."mysql"   şŒgo.string."root:haiootest&!#*!$@tcp(218.6.173.156:3306)/?charset=utf8"    –        :       root:haiootest&!#*!$@tcp(218.6.173.156:3306)/?charset=utf8    Œgo.string."root:haiootest&!#*!$@tcp(218.6.173.156:3306)/?charset=utf8"   ş<go.string."è¿æ¥ä»åº“å¤±è´¥" P  F               è¿æ¥ä»åº“å¤±è´¥    <go.string."è¿æ¥ä»åº“å¤±è´¥"   ş<go.string."è¿æ¥ä¸»åº“å¤±è´¥" P  F               è¿æ¥ä¸»åº“å¤±è´¥    <go.string."è¿æ¥ä¸»åº“å¤±è´¥"   şTgclocalsÂ·4dec02d8dc04a0e7c72b54f257fea975 0  0           ò  ò      şTgclocalsÂ·0372b889336bbdf612862c172920463d           şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           ş*"".XormRead  Htype.*github.com/go-xorm/xorm.Engine   ş*"".XormWriter  Htype.*github.com/go-xorm/xorm.Engine   ş,"".initdoneÂ·  type.uint8   ş"".initÂ·1Â·f              "".initÂ·1   şZgithub.com/Unknwon/goconfig.LoadConfigFileÂ·f              Tgithub.com/Unknwon/goconfig.LoadConfigFile   ş$runtime.convT2EÂ·f              runtime.convT2E   ş8runtime.writebarrierifaceÂ·f              2runtime.writebarrieriface   şfmt.PrintlnÂ·f              fmt.Println   ş$runtime.gopanicÂ·f              runtime.gopanic   şHgithub.com/go-xorm/xorm.NewEngineÂ·f              Bgithub.com/go-xorm/xorm.NewEngine   ş4runtime.writebarrierptrÂ·f              .runtime.writebarrierptr   ş"".initÂ·f              "".init   ş(runtime.throwinitÂ·f              "runtime.throwinit   ş>github.com/go-xorm/xorm.initÂ·f              8github.com/go-xorm/xorm.init   şLgithub.com/go-sql-driver/mysql.initÂ·f              Fgithub.com/go-sql-driver/mysql.init   şFgithub.com/Unknwon/goconfig.initÂ·f              @github.com/Unknwon/goconfig.init   şfmt.initÂ·f              fmt.init   şbruntime.gcbits.0xcc000000000000000000000000000000     Ì                ş0go.string."interface {}" @  :               interface {}    0go.string."interface {}"   ş"type.interface {} À  À       çW                                                                                   €  runtime.algarray   0  bruntime.gcbits.0xcc000000000000000000000000000000   P  0go.string."interface {}"   p  4go.weak.type.*interface {}   €  "runtime.zerovalue   À "type.interface {}   şbruntime.gcbits.0x48844400000000000000000000000000     H„D              ş4go.string."[]interface {}" @  >               []interface {}    4go.string."[]interface {}"   ş&type.[]interface {}            p“ê/                                                                     runtime.algarray   0  bruntime.gcbits.0x48844400000000000000000000000000   P  4go.string."[]interface {}"   p  8go.weak.type.*[]interface {}   €  "runtime.zerovalue     "type.interface {}   şRgo.typelink.[]interface {}/[]interface {}              &type.[]interface {}   şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·2dc77d960dd3e4b3de2361f9cbd75783             şTgclocalsÂ·44568aa369055d8938d809aa5d80843b              şTgclocalsÂ·9c703c5c7b9c1932c840b69f8ebce236             ş<type..hashfunc.[1]interface {}              4type..hash.[1]interface {}   ş8type..eqfunc.[1]interface {}              0type..eq.[1]interface {}   ş2type..alg.[1]interface {}                        <type..hashfunc.[1]interface {}     8type..eqfunc.[1]interface {}   ş6go.string."[1]interface {}" @  @               [1]interface {}    6go.string."[1]interface {}"   ş(type.[1]interface {} À  À       P‘[ú                                                                                   2type..alg.[1]interface {}   0  bruntime.gcbits.0xcc000000000000000000000000000000   P  6go.string."[1]interface {}"   p  :go.weak.type.*[1]interface {}   €  "runtime.zerovalue     "type.interface {}      &type.[]interface {}   şVgo.typelink.[1]interface {}/[1]interface {}              (type.[1]interface {}   şbruntime.gcbits.0x88000000000000000000000000000000     ˆ                ş8go.string."*[1]interface {}" P  B               *[1]interface {}    8go.string."*[1]interface {}"   ş*type.*[1]interface {}            ¿¨5 6                                                                    runtime.algarray   0  bruntime.gcbits.0x88000000000000000000000000000000   P  8go.string."*[1]interface {}"   p  <go.weak.type.**[1]interface {}   €  "runtime.zerovalue     (type.[1]interface {}   şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·2dc77d960dd3e4b3de2361f9cbd75783             şTgclocalsÂ·44568aa369055d8938d809aa5d80843b              şTgclocalsÂ·9c703c5c7b9c1932c840b69f8ebce236             şHtype..hashfunc."".HaiouMemberAddress              @type..hash."".HaiouMemberAddress   şDtype..eqfunc."".HaiouMemberAddress              <type..eq."".HaiouMemberAddress   ş>type..alg."".HaiouMemberAddress                        Htype..hashfunc."".HaiouMemberAddress     Dtype..eqfunc."".HaiouMemberAddress   şLgo.string."*models.HaiouMemberAddress" `  V               *models.HaiouMemberAddress    Lgo.string."*models.HaiouMemberAddress"   ş6type.*"".HaiouMemberAddress             GÏĞX 6                                                                    runtime.algarray   0  bruntime.gcbits.0x88000000000000000000000000000000   P  Lgo.string."*models.HaiouMemberAddress"   p  Hgo.weak.type.**"".HaiouMemberAddress   €  "runtime.zerovalue     4type."".HaiouMemberAddress   şbruntime.gcbits.0x84444800000000000000000000000000     „DH              şJgo.string."models.HaiouMemberAddress" `  T               models.HaiouMemberAddress    Jgo.string."models.HaiouMemberAddress"   şgo.string."Id" 0  &               Id    go.string."Id"   ş go.string."Name" 0  *               Name     go.string."Name"   ş<go.string."HaiouMemberAddress" P  F               HaiouMemberAddress    <go.string."HaiouMemberAddress"   ş4type."".HaiouMemberAddress  °  °       “Ù                                                                                                                                                                                                         >type..alg."".HaiouMemberAddress   0  bruntime.gcbits.0x84444800000000000000000000000000   P  Jgo.string."models.HaiouMemberAddress"   p  6type.*"".HaiouMemberAddress   €  "runtime.zerovalue   À 4type."".HaiouMemberAddress   À  go.string."Id"   à  type.int64      go.string."Name"   °  type.string   `à 4type."".HaiouMemberAddress   à  <go.string."HaiouMemberAddress"   ğ  "go.importpath."".   €° 4type."".HaiouMemberAddress   şNgo.string."github.com/Unknwon/goconfig" `  X               github.com/Unknwon/goconfig    Ngo.string."github.com/Unknwon/goconfig"   şTgo.importpath.github.com/Unknwon/goconfig.                       Ngo.string."github.com/Unknwon/goconfig"   ş&go.string."runtime" 0  0               runtime    &go.string."runtime"   ş,go.importpath.runtime.                       &go.string."runtime"   şgo.string."fmt" 0  (               fmt    go.string."fmt"   ş$go.importpath.fmt.                       go.string."fmt"   şTgo.string."github.com/go-sql-driver/mysql" `  ^               github.com/go-sql-driver/mysql    Tgo.string."github.com/go-sql-driver/mysql"   şZgo.importpath.github.com/go-sql-driver/mysql.                       Tgo.string."github.com/go-sql-driver/mysql"   şFgo.string."github.com/go-xorm/xorm" P  P               github.com/go-xorm/xorm    Fgo.string."github.com/go-xorm/xorm"   şLgo.importpath.github.com/go-xorm/xorm.                       Fgo.string."github.com/go-xorm/xorm"   ş:type..hash.[1]interface {}Â·f              4type..hash.[1]interface {}   ş.runtime.nilinterhashÂ·f              (runtime.nilinterhash   ş,runtime.throwreturnÂ·f              &runtime.throwreturn   ş6type..eq.[1]interface {}Â·f              0type..eq.[1]interface {}   ş$runtime.efaceeqÂ·f              runtime.efaceeq   şFtype..hash."".HaiouMemberAddressÂ·f              @type..hash."".HaiouMemberAddress   ş$runtime.memhashÂ·f              runtime.memhash   ş$runtime.strhashÂ·f              runtime.strhash   şBtype..eq."".HaiouMemberAddressÂ·f              <type..eq."".HaiouMemberAddress   ş&runtime.eqstringÂ·f               runtime.eqstring   ş"runtime.zerovalue      ÿÿgo13ld 
